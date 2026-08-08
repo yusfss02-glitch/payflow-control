@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Layout from "@/components/Layout";
 
 const records = [
@@ -45,34 +46,57 @@ export default function ReconciliationPage() {
   const [status, setStatus] = useState("All");
 
   const filteredRecords = records.filter(
-    (record) => status === "All" || record.status === status
+    (record) =>
+      status === "All" ||
+      record.status === status
   );
 
   return (
     <Layout>
       <div className="space-y-6">
+
         <div>
-          <h2 className="text-3xl font-bold">Reconciliation</h2>
+          <h2 className="text-3xl font-bold">
+            Reconciliation
+          </h2>
+
           <p className="mt-1 text-gray-500">
             Monitor payment matching and reconciliation exceptions.
           </p>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
+
           <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">Matched</p>
-            <p className="mt-2 text-3xl font-bold">2</p>
+            <p className="text-sm text-gray-500">
+              Matched
+            </p>
+
+            <p className="mt-2 text-3xl font-bold">
+              2
+            </p>
           </div>
 
           <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">Unmatched</p>
-            <p className="mt-2 text-3xl font-bold">2</p>
+            <p className="text-sm text-gray-500">
+              Unmatched
+            </p>
+
+            <p className="mt-2 text-3xl font-bold">
+              2
+            </p>
           </div>
 
           <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">Under Review</p>
-            <p className="mt-2 text-3xl font-bold">1</p>
+            <p className="text-sm text-gray-500">
+              Under Review
+            </p>
+
+            <p className="mt-2 text-3xl font-bold">
+              1
+            </p>
           </div>
+
         </div>
 
         <div className="flex items-center justify-between">
@@ -82,13 +106,26 @@ export default function ReconciliationPage() {
 
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) =>
+              setStatus(e.target.value)
+            }
             className="rounded-lg border bg-white px-4 py-2"
           >
-            <option value="All">All Status</option>
-            <option value="Matched">Matched</option>
-            <option value="Unmatched">Unmatched</option>
-            <option value="Under Review">Under Review</option>
+            <option value="All">
+              All Status
+            </option>
+
+            <option value="Matched">
+              Matched
+            </option>
+
+            <option value="Unmatched">
+              Unmatched
+            </option>
+
+            <option value="Under Review">
+              Under Review
+            </option>
           </select>
         </div>
 
@@ -96,11 +133,25 @@ export default function ReconciliationPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b">
-                <th className="pb-3">Record</th>
-                <th className="pb-3">Transaction</th>
-                <th className="pb-3">Merchant</th>
-                <th className="pb-3">Amount</th>
-                <th className="pb-3">Status</th>
+                <th className="pb-3">
+                  Record
+                </th>
+
+                <th className="pb-3">
+                  Transaction
+                </th>
+
+                <th className="pb-3">
+                  Merchant
+                </th>
+
+                <th className="pb-3">
+                  Amount
+                </th>
+
+                <th className="pb-3">
+                  Status
+                </th>
               </tr>
             </thead>
 
@@ -110,56 +161,42 @@ export default function ReconciliationPage() {
                   key={record.id}
                   className="border-b last:border-0"
                 >
-                  <td className="py-4 font-medium">{record.id}</td>
-                  <td>{record.transaction}</td>
-                  <td>{record.merchant}</td>
-                  <td>{record.amount}</td>
+                  <td className="py-4 font-medium">
+                    <Link
+                      href={`/reconciliation/${record.id}`}
+                      className="inline-block text-blue-600 underline hover:text-blue-800"
+                    >
+                      {record.id}
+                    </Link>
+                  </td>
+
+                  <td>
+                    {record.transaction}
+                  </td>
+
+                  <td>
+                    {record.merchant}
+                  </td>
+
+                  <td>
+                    {record.amount}
+                  </td>
 
                   <td>
                     {record.status === "Matched" && (
-                      <span
-                        style={{
-                          backgroundColor: "#dcfce7",
-                          color: "#15803d",
-                          padding: "4px 12px",
-                          borderRadius: "9999px",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          display: "inline-block",
-                        }}
-                      >
+                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
                         Matched
                       </span>
                     )}
 
                     {record.status === "Unmatched" && (
-                      <span
-                        style={{
-                          backgroundColor: "#fee2e2",
-                          color: "#b91c1c",
-                          padding: "4px 12px",
-                          borderRadius: "9999px",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          display: "inline-block",
-                        }}
-                      >
+                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
                         Unmatched
                       </span>
                     )}
 
                     {record.status === "Under Review" && (
-                      <span
-                        style={{
-                          backgroundColor: "#fef3c7",
-                          color: "#b45309",
-                          padding: "4px 12px",
-                          borderRadius: "9999px",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          display: "inline-block",
-                        }}
-                      >
+                      <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
                         Under Review
                       </span>
                     )}
@@ -169,6 +206,7 @@ export default function ReconciliationPage() {
             </tbody>
           </table>
         </div>
+
       </div>
     </Layout>
   );
