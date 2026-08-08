@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
+import Link from "next/link";
 import Layout from "@/components/Layout";
+import { useWorkflow } from "@/components/WorkflowContext";
 
 const transactions = [
   {
@@ -53,8 +54,17 @@ export default function TransactionsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
 
+  const {
+    transactionStatuses,
+    updateTransactionStatus,
+  } = useWorkflow();
+
   const filteredTransactions = transactions.filter(
     (transaction) => {
+      const currentStatus =
+        transactionStatuses[transaction.id] ||
+        transaction.status;
+
       const matchesSearch =
         transaction.id
           .toLowerCase()
@@ -65,7 +75,7 @@ export default function TransactionsPage() {
 
       const matchesStatus =
         status === "All" ||
-        transaction.status === status;
+        currentStatus === status;
 
       return matchesSearch && matchesStatus;
     }
@@ -74,6 +84,7 @@ export default function TransactionsPage() {
   return (
     <Layout>
       <div className="space-y-6">
+
         <div>
           <h2 className="text-3xl font-bold">
             Transactions
@@ -85,6 +96,7 @@ export default function TransactionsPage() {
         </div>
 
         <div className="flex gap-4">
+
           <input
             type="text"
             placeholder="Search transaction or merchant..."
@@ -118,12 +130,16 @@ export default function TransactionsPage() {
               Exception
             </option>
           </select>
+
         </div>
 
         <div className="rounded-xl bg-white p-6 shadow">
+
           <table className="w-full text-left">
+
             <thead>
               <tr className="border-b">
+
                 <th className="pb-3">
                   Transaction ID
                 </th>
@@ -143,71 +159,133 @@ export default function TransactionsPage() {
                 <th className="pb-3">
                   Status
                 </th>
+
+                <th className="pb-3 text-right">
+                  Action
+                </th>
+
               </tr>
             </thead>
 
             <tbody>
+
               {filteredTransactions.map(
-                (transaction) => (
-                  <tr
-                    key={transaction.id}
-                    className="border-b last:border-0"
-                  >
-                    <td className="py-4 font-medium">
-                      <Link
-                        href={`/transactions/${transaction.id}`}
-                        className="inline-block text-blue-600 underline hover:text-blue-800"
-                      >
-                        {transaction.id}
-                      </Link>
-                    </td>
+                (transaction) => {
 
-                    <td>
-                      {transaction.merchant}
-                    </td>
+                  const currentStatus =
+                    transactionStatuses[
+                      transaction.id
+                    ] || transaction.status;
 
-                    <td>
-                      {transaction.amount}
-                    </td>
+                  return (
+                    <tr
+                      key={transaction.id}
+                      className="border-b last:border-0"
+                    >
 
-                    <td>
-                      {transaction.method}
-                    </td>
+                      <td className="py-4 font-medium">
 
-                    <td>
-                      {transaction.status ===
-                        "Success" && (
-                        <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                          Success
+                        <Link
+                          href={`/transactions/${transaction.id}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {transaction.id}
+                        </Link>
+
+                      </td>
+
+                      <td>
+                        {transaction.merchant}
+                      </td>
+
+                      <td>
+                        {transaction.amount}
+                      </td>
+
+                      <td>
+                        {transaction.method}
+                      </td>
+
+                      <td>
+
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            currentStatus ===
+                            "Success"
+                              ? "bg-green-100 text-green-700"
+                              : currentStatus ===
+                                "Pending"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {currentStatus}
                         </span>
-                      )}
 
-                      {transaction.status ===
-                        "Pending" && (
-                        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                          Pending
-                        </span>
-                      )}
+                      </td>
 
-                      {transaction.status ===
-                        "Exception" && (
-                        <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                          Exception
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                )
+                      <td className="text-right">
+
+                        {currentStatus ===
+                          "Pending" && (
+                          <button
+                            onClick={() =>
+                              updateTransactionStatus(
+                                transaction.id,
+                                "Success"
+                              )
+                            }
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                          >
+                            Approve
+                          </button>
+                        )}
+
+                        {currentStatus ===
+                          "Exception" && (
+                          <button
+                            onClick={() =>
+                              updateTransactionStatus(
+                                transaction.id,
+                                "Success"
+                              )
+                            }
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                          >
+                            Resolve
+                          </button>
+                        )}
+
+                        {currentStatus ===
+                          "Success" && (
+                          <button
+                            disabled
+                            className="cursor-not-allowed rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-500"
+                          >
+                            Completed
+                          </button>
+                        )}
+
+                      </td>
+
+                    </tr>
+                  );
+                }
               )}
+
             </tbody>
+
           </table>
 
-          {filteredTransactions.length === 0 && (
+          {filteredTransactions.length ===
+            0 && (
             <p className="py-8 text-center text-gray-500">
               No transactions found.
             </p>
           )}
+
         </div>
+
       </div>
     </Layout>
   );

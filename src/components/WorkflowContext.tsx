@@ -1,14 +1,24 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+} from "react";
 
 type StatusMap = Record<string, string>;
 
 type WorkflowContextType = {
+  transactionStatuses: StatusMap;
   reconciliationStatuses: StatusMap;
   exceptionStatuses: StatusMap;
   complianceStatuses: StatusMap;
   riskStatuses: StatusMap;
+
+  updateTransactionStatus: (
+    id: string,
+    status: string
+  ) => void;
 
   updateReconciliationStatus: (
     id: string,
@@ -41,6 +51,9 @@ export function WorkflowProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const [transactionStatuses, setTransactionStatuses] =
+    useState<StatusMap>({});
+
   const [reconciliationStatuses, setReconciliationStatuses] =
     useState<StatusMap>({});
 
@@ -52,6 +65,16 @@ export function WorkflowProvider({
 
   const [riskStatuses, setRiskStatuses] =
     useState<StatusMap>({});
+
+  const updateTransactionStatus = (
+    id: string,
+    status: string
+  ) => {
+    setTransactionStatuses((current) => ({
+      ...current,
+      [id]: status,
+    }));
+  };
 
   const updateReconciliationStatus = (
     id: string,
@@ -96,10 +119,13 @@ export function WorkflowProvider({
   return (
     <WorkflowContext.Provider
       value={{
+        transactionStatuses,
         reconciliationStatuses,
         exceptionStatuses,
         complianceStatuses,
         riskStatuses,
+
+        updateTransactionStatus,
         updateReconciliationStatus,
         updateExceptionStatus,
         updateComplianceStatus,

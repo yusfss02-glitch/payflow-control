@@ -1,5 +1,9 @@
+"use client";
+
+import { use } from "react";
 import Link from "next/link";
 import Layout from "@/components/Layout";
+import { useWorkflow } from "@/components/WorkflowContext";
 
 const transactions = {
   TXN001: {
@@ -72,19 +76,26 @@ const transactions = {
 
 type TransactionId = keyof typeof transactions;
 
-export default async function TransactionDetail({
+export default function TransactionDetail({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  const { id } = use(params);
 
-  const transaction = transactions[id as TransactionId];
+  const transaction =
+    transactions[id as TransactionId];
+
+  const {
+    transactionStatuses,
+    updateTransactionStatus,
+  } = useWorkflow();
 
   if (!transaction) {
     return (
       <Layout>
         <div className="rounded-xl bg-white p-8 shadow">
+
           <h2 className="text-2xl font-bold">
             Transaction Not Found
           </h2>
@@ -99,16 +110,25 @@ export default async function TransactionDetail({
           >
             Back to Transactions
           </Link>
+
         </div>
       </Layout>
     );
   }
 
+  const currentStatus =
+    transactionStatuses[transaction.id] ||
+    transaction.status;
+
   return (
     <Layout>
+
       <div className="space-y-6">
 
+        {/* HEADER */}
+
         <div>
+
           <Link
             href="/transactions"
             className="text-sm text-gray-500 hover:text-slate-900"
@@ -117,6 +137,7 @@ export default async function TransactionDetail({
           </Link>
 
           <div className="mt-3 flex items-center justify-between">
+
             <div>
               <h2 className="text-3xl font-bold">
                 {transaction.id}
@@ -127,29 +148,83 @@ export default async function TransactionDetail({
               </p>
             </div>
 
-            {transaction.status === "Success" && (
-              <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
-                Success
-              </span>
-            )}
+            <span
+              className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                currentStatus === "Success"
+                  ? "bg-green-100 text-green-700"
+                  : currentStatus === "Pending"
+                  ? "bg-yellow-100 text-yellow-700"
+                  : "bg-red-100 text-red-700"
+              }`}
+            >
+              {currentStatus}
+            </span>
 
-            {transaction.status === "Pending" && (
-              <span className="rounded-full bg-yellow-100 px-4 py-2 text-sm font-semibold text-yellow-700">
-                Pending
-              </span>
-            )}
-
-            {transaction.status === "Exception" && (
-              <span className="rounded-full bg-red-100 px-4 py-2 text-sm font-semibold text-red-700">
-                Exception
-              </span>
-            )}
           </div>
+
         </div>
+
+        {/* ACTION */}
+
+        <div className="rounded-xl bg-white p-6 shadow">
+
+          <h3 className="text-lg font-semibold">
+            Transaction Action
+          </h3>
+
+          <p className="mt-1 text-sm text-gray-500">
+            Update the operational status of this transaction.
+          </p>
+
+          <div className="mt-5">
+
+            {currentStatus === "Pending" && (
+              <button
+                onClick={() =>
+                  updateTransactionStatus(
+                    transaction.id,
+                    "Success"
+                  )
+                }
+                className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-700"
+              >
+                Approve Transaction
+              </button>
+            )}
+
+            {currentStatus === "Exception" && (
+              <button
+                onClick={() =>
+                  updateTransactionStatus(
+                    transaction.id,
+                    "Success"
+                  )
+                }
+                className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-700"
+              >
+                Resolve Transaction
+              </button>
+            )}
+
+            {currentStatus === "Success" && (
+              <button
+                disabled
+                className="cursor-not-allowed rounded-lg bg-gray-200 px-5 py-2 text-sm font-medium text-gray-500"
+              >
+                Completed
+              </button>
+            )}
+
+          </div>
+
+        </div>
+
+        {/* SUMMARY */}
 
         <div className="grid grid-cols-3 gap-4">
 
           <div className="rounded-xl bg-white p-5 shadow">
+
             <p className="text-sm text-gray-500">
               Amount
             </p>
@@ -157,9 +232,11 @@ export default async function TransactionDetail({
             <p className="mt-2 text-2xl font-bold">
               {transaction.amount}
             </p>
+
           </div>
 
           <div className="rounded-xl bg-white p-5 shadow">
+
             <p className="text-sm text-gray-500">
               Settlement
             </p>
@@ -167,9 +244,11 @@ export default async function TransactionDetail({
             <p className="mt-2 text-lg font-semibold">
               {transaction.settlement}
             </p>
+
           </div>
 
           <div className="rounded-xl bg-white p-5 shadow">
+
             <p className="text-sm text-gray-500">
               Risk Level
             </p>
@@ -185,11 +264,15 @@ export default async function TransactionDetail({
             >
               {transaction.risk}
             </p>
+
           </div>
 
         </div>
 
+        {/* DETAILS */}
+
         <div className="rounded-xl bg-white p-6 shadow">
+
           <h3 className="text-lg font-semibold">
             Transaction Details
           </h3>
@@ -200,6 +283,7 @@ export default async function TransactionDetail({
               <p className="text-sm text-gray-500">
                 Transaction ID
               </p>
+
               <p className="mt-1 font-medium">
                 {transaction.id}
               </p>
@@ -209,6 +293,7 @@ export default async function TransactionDetail({
               <p className="text-sm text-gray-500">
                 Merchant
               </p>
+
               <p className="mt-1 font-medium">
                 {transaction.merchant}
               </p>
@@ -218,6 +303,7 @@ export default async function TransactionDetail({
               <p className="text-sm text-gray-500">
                 Payment Method
               </p>
+
               <p className="mt-1 font-medium">
                 {transaction.method}
               </p>
@@ -227,6 +313,7 @@ export default async function TransactionDetail({
               <p className="text-sm text-gray-500">
                 Payment Provider
               </p>
+
               <p className="mt-1 font-medium">
                 {transaction.provider}
               </p>
@@ -236,6 +323,7 @@ export default async function TransactionDetail({
               <p className="text-sm text-gray-500">
                 Created At
               </p>
+
               <p className="mt-1 font-medium">
                 {transaction.createdAt}
               </p>
@@ -245,22 +333,23 @@ export default async function TransactionDetail({
               <p className="text-sm text-gray-500">
                 Current Status
               </p>
+
               <p className="mt-1 font-medium">
-                {transaction.status}
+                {currentStatus}
               </p>
             </div>
 
           </div>
+
         </div>
 
-        <div className="rounded-xl bg-white p-6 shadow">
-          <h3 className="text-lg font-semibold">
-            Operational Actions
-          </h3>
+        {/* RELATED OPERATIONS */}
 
-          <p className="mt-1 text-sm text-gray-500">
-            Continue investigation through related payment operations.
-          </p>
+        <div className="rounded-xl bg-white p-6 shadow">
+
+          <h3 className="text-lg font-semibold">
+            Related Operations
+          </h3>
 
           <div className="mt-5 flex gap-3">
 
@@ -286,9 +375,11 @@ export default async function TransactionDetail({
             </Link>
 
           </div>
+
         </div>
 
       </div>
+
     </Layout>
   );
 }
