@@ -1,16 +1,19 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useState } from "react";
+
+type StatusMap = Record<string, string>;
 
 type WorkflowContextType = {
-  exceptionStatuses: Record<string, string>;
-  complianceStatuses: Record<string, string>;
-  reconciliationStatuses: Record<string, string>;
+  reconciliationStatuses: StatusMap;
+  exceptionStatuses: StatusMap;
+  complianceStatuses: StatusMap;
+  riskStatuses: StatusMap;
+
+  updateReconciliationStatus: (
+    id: string,
+    status: string
+  ) => void;
 
   updateExceptionStatus: (
     id: string,
@@ -22,7 +25,7 @@ type WorkflowContextType = {
     status: string
   ) => void;
 
-  updateReconciliationStatus: (
+  updateRiskStatus: (
     id: string,
     status: string
   ) => void;
@@ -36,30 +39,29 @@ const WorkflowContext =
 export function WorkflowProvider({
   children,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
+  const [reconciliationStatuses, setReconciliationStatuses] =
+    useState<StatusMap>({});
+
   const [exceptionStatuses, setExceptionStatuses] =
-    useState<Record<string, string>>({
-      EXC001: "Open",
-      EXC002: "Under Review",
-      EXC003: "Open",
-    });
+    useState<StatusMap>({});
 
   const [complianceStatuses, setComplianceStatuses] =
-    useState<Record<string, string>>({
-      CMP001: "Pending Review",
-      CMP002: "Reviewing",
-      CMP003: "Approved",
-    });
+    useState<StatusMap>({});
 
-  const [reconciliationStatuses, setReconciliationStatuses] =
-    useState<Record<string, string>>({
-      REC001: "Matched",
-      REC002: "Under Review",
-      REC003: "Unmatched",
-      REC004: "Matched",
-      REC005: "Unmatched",
-    });
+  const [riskStatuses, setRiskStatuses] =
+    useState<StatusMap>({});
+
+  const updateReconciliationStatus = (
+    id: string,
+    status: string
+  ) => {
+    setReconciliationStatuses((current) => ({
+      ...current,
+      [id]: status,
+    }));
+  };
 
   const updateExceptionStatus = (
     id: string,
@@ -81,11 +83,11 @@ export function WorkflowProvider({
     }));
   };
 
-  const updateReconciliationStatus = (
+  const updateRiskStatus = (
     id: string,
     status: string
   ) => {
-    setReconciliationStatuses((current) => ({
+    setRiskStatuses((current) => ({
       ...current,
       [id]: status,
     }));
@@ -94,12 +96,14 @@ export function WorkflowProvider({
   return (
     <WorkflowContext.Provider
       value={{
+        reconciliationStatuses,
         exceptionStatuses,
         complianceStatuses,
-        reconciliationStatuses,
+        riskStatuses,
+        updateReconciliationStatus,
         updateExceptionStatus,
         updateComplianceStatus,
-        updateReconciliationStatus,
+        updateRiskStatus,
       }}
     >
       {children}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Layout from "@/components/Layout";
+import { useWorkflow } from "@/components/WorkflowContext";
 
 const records = [
   {
@@ -10,45 +11,51 @@ const records = [
     transaction: "TXN001",
     merchant: "Hotel A",
     amount: "$1,250",
-    status: "Matched",
   },
   {
     id: "REC002",
     transaction: "TXN002",
     merchant: "Hotel B",
     amount: "$980",
-    status: "Under Review",
   },
   {
     id: "REC003",
     transaction: "TXN003",
     merchant: "Hotel C",
     amount: "$2,430",
-    status: "Unmatched",
   },
   {
     id: "REC004",
     transaction: "TXN004",
     merchant: "Hotel D",
     amount: "$750",
-    status: "Matched",
   },
   {
     id: "REC005",
     transaction: "TXN005",
     merchant: "Hotel E",
     amount: "$1,890",
-    status: "Unmatched",
   },
 ];
 
 export default function ReconciliationPage() {
   const [status, setStatus] = useState("All");
 
-  const filteredRecords = records.filter(
-    (record) =>
-      status === "All" || record.status === status
-  );
+  const {
+    reconciliationStatuses,
+    updateReconciliationStatus,
+  } = useWorkflow();
+
+  const filteredRecords = records.filter((record) => {
+    const currentStatus =
+      reconciliationStatuses[record.id] ||
+      "Unmatched";
+
+    return (
+      status === "All" ||
+      currentStatus === status
+    );
+  });
 
   return (
     <Layout>
@@ -72,7 +79,13 @@ export default function ReconciliationPage() {
             </p>
 
             <p className="mt-2 text-3xl font-bold">
-              2
+              {
+                records.filter(
+                  (record) =>
+                    (reconciliationStatuses[record.id] ||
+                      "Unmatched") === "Matched"
+                ).length
+              }
             </p>
           </div>
 
@@ -82,7 +95,13 @@ export default function ReconciliationPage() {
             </p>
 
             <p className="mt-2 text-3xl font-bold">
-              2
+              {
+                records.filter(
+                  (record) =>
+                    (reconciliationStatuses[record.id] ||
+                      "Unmatched") === "Unmatched"
+                ).length
+              }
             </p>
           </div>
 
@@ -92,7 +111,13 @@ export default function ReconciliationPage() {
             </p>
 
             <p className="mt-2 text-3xl font-bold">
-              1
+              {
+                records.filter(
+                  (record) =>
+                    (reconciliationStatuses[record.id] ||
+                      "Unmatched") === "Under Review"
+                ).length
+              }
             </p>
           </div>
 
@@ -106,15 +131,13 @@ export default function ReconciliationPage() {
 
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) =>
+              setStatus(e.target.value)
+            }
             className="rounded-lg border bg-white px-4 py-2"
           >
             <option value="All">
               All Status
-            </option>
-
-            <option value="Matched">
-              Matched
             </option>
 
             <option value="Unmatched">
@@ -123,6 +146,10 @@ export default function ReconciliationPage() {
 
             <option value="Under Review">
               Under Review
+            </option>
+
+            <option value="Matched">
+              Matched
             </option>
           </select>
 
@@ -155,67 +182,113 @@ export default function ReconciliationPage() {
                   Status
                 </th>
 
+                <th className="pb-3 text-right">
+                  Action
+                </th>
+
               </tr>
             </thead>
 
             <tbody>
 
-              {filteredRecords.map((record) => (
-                <tr
-                  key={record.id}
-                  className="border-b last:border-0"
-                >
+              {filteredRecords.map((record) => {
 
-                  <td className="py-4 font-medium">
-                    <Link
-                      href={`/reconciliation/${record.id}`}
-                      className="text-blue-600 underline hover:text-blue-800"
-                    >
-                      {record.id}
-                    </Link>
-                  </td>
+                const currentStatus =
+                  reconciliationStatuses[record.id] ||
+                  "Unmatched";
 
-                  <td>
-                    <Link
-                      href={`/transactions/${record.transaction}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      {record.transaction}
-                    </Link>
-                  </td>
+                return (
+                  <tr
+                    key={record.id}
+                    className="border-b last:border-0"
+                  >
 
-                  <td>
-                    {record.merchant}
-                  </td>
+                    <td className="py-4 font-medium">
 
-                  <td>
-                    {record.amount}
-                  </td>
+                      <Link
+                        href={`/reconciliation/${record.id}`}
+                        className="text-blue-600 underline hover:text-blue-800"
+                      >
+                        {record.id}
+                      </Link>
 
-                  <td>
+                    </td>
 
-                    {record.status === "Matched" && (
-                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                        Matched
+                    <td>
+                      <Link
+                        href={`/transactions/${record.transaction}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {record.transaction}
+                      </Link>
+                    </td>
+
+                    <td>
+                      {record.merchant}
+                    </td>
+
+                    <td>
+                      {record.amount}
+                    </td>
+
+                    <td>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          currentStatus === "Matched"
+                            ? "bg-green-100 text-green-700"
+                            : currentStatus === "Under Review"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {currentStatus}
                       </span>
-                    )}
+                    </td>
 
-                    {record.status === "Unmatched" && (
-                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                        Unmatched
-                      </span>
-                    )}
+                    <td className="text-right">
 
-                    {record.status === "Under Review" && (
-                      <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                        Under Review
-                      </span>
-                    )}
+                      {currentStatus === "Unmatched" && (
+                        <button
+                          onClick={() =>
+                            updateReconciliationStatus(
+                              record.id,
+                              "Under Review"
+                            )
+                          }
+                          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                        >
+                          Review
+                        </button>
+                      )}
 
-                  </td>
+                      {currentStatus === "Under Review" && (
+                        <button
+                          onClick={() =>
+                            updateReconciliationStatus(
+                              record.id,
+                              "Matched"
+                            )
+                          }
+                          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                        >
+                          Match
+                        </button>
+                      )}
 
-                </tr>
-              ))}
+                      {currentStatus === "Matched" && (
+                        <button
+                          disabled
+                          className="cursor-not-allowed rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-500"
+                        >
+                          Matched
+                        </button>
+                      )}
+
+                    </td>
+
+                  </tr>
+                );
+              })}
 
             </tbody>
 

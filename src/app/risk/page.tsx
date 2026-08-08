@@ -3,42 +3,49 @@
 import { useState } from "react";
 import Link from "next/link";
 import Layout from "@/components/Layout";
+import { useWorkflow } from "@/components/WorkflowContext";
 
 const risks = [
   {
     id: "RISK001",
     transaction: "TXN003",
     merchant: "Hotel C",
-    score: 87,
-    level: "High",
-    status: "Detected",
+    riskType: "High Value Transaction",
+    score: 92,
   },
   {
     id: "RISK002",
     transaction: "TXN006",
     merchant: "Hotel F",
-    score: 72,
-    level: "Medium",
-    status: "Reviewing",
+    riskType: "Unusual Payment Pattern",
+    score: 84,
   },
   {
     id: "RISK003",
     transaction: "TXN002",
     merchant: "Hotel B",
-    score: 54,
-    level: "Medium",
-    status: "Mitigated",
+    riskType: "Velocity Alert",
+    score: 67,
   },
 ];
 
 export default function RiskPage() {
   const [status, setStatus] = useState("All");
 
-  const filteredRisks = risks.filter(
-    (risk) =>
+  const {
+    riskStatuses,
+    updateRiskStatus,
+  } = useWorkflow();
+
+  const filteredRisks = risks.filter((risk) => {
+    const currentStatus =
+      riskStatuses[risk.id] || "Open";
+
+    return (
       status === "All" ||
-      risk.status === status
-  );
+      currentStatus === status
+    );
+  });
 
   return (
     <Layout>
@@ -50,13 +57,66 @@ export default function RiskPage() {
           </h2>
 
           <p className="mt-1 text-gray-500">
-            Monitor transaction risk signals and mitigation activities.
+            Monitor payment risk signals and investigate high-risk transactions.
           </p>
         </div>
 
+        <div className="grid grid-cols-3 gap-4">
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-gray-500">
+              Open
+            </p>
+
+            <p className="mt-2 text-3xl font-bold">
+              {
+                risks.filter(
+                  (risk) =>
+                    (riskStatuses[risk.id] || "Open") ===
+                    "Open"
+                ).length
+              }
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-gray-500">
+              Under Review
+            </p>
+
+            <p className="mt-2 text-3xl font-bold">
+              {
+                risks.filter(
+                  (risk) =>
+                    (riskStatuses[risk.id] || "Open") ===
+                    "Under Review"
+                ).length
+              }
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-gray-500">
+              Resolved
+            </p>
+
+            <p className="mt-2 text-3xl font-bold">
+              {
+                risks.filter(
+                  (risk) =>
+                    (riskStatuses[risk.id] || "Open") ===
+                    "Resolved"
+                ).length
+              }
+            </p>
+          </div>
+
+        </div>
+
         <div className="flex items-center justify-between">
+
           <h3 className="text-xl font-semibold">
-            Risk Queue
+            Risk Alerts
           </h3>
 
           <select
@@ -70,25 +130,28 @@ export default function RiskPage() {
               All Status
             </option>
 
-            <option value="Detected">
-              Detected
+            <option value="Open">
+              Open
             </option>
 
-            <option value="Reviewing">
-              Reviewing
+            <option value="Under Review">
+              Under Review
             </option>
 
-            <option value="Mitigated">
-              Mitigated
+            <option value="Resolved">
+              Resolved
             </option>
           </select>
+
         </div>
 
         <div className="rounded-xl bg-white p-6 shadow">
+
           <table className="w-full text-left">
 
             <thead>
               <tr className="border-b">
+
                 <th className="pb-3">
                   Risk ID
                 </th>
@@ -102,92 +165,146 @@ export default function RiskPage() {
                 </th>
 
                 <th className="pb-3">
-                  Risk Score
+                  Risk Type
                 </th>
 
                 <th className="pb-3">
-                  Level
+                  Score
                 </th>
 
                 <th className="pb-3">
                   Status
                 </th>
+
+                <th className="pb-3 text-right">
+                  Action
+                </th>
+
               </tr>
             </thead>
 
             <tbody>
-              {filteredRisks.map((risk) => (
-                <tr
-                  key={risk.id}
-                  className="border-b last:border-0"
-                >
 
-                  <td className="py-4 font-medium">
-                    <Link
-                      href={`/risk/${risk.id}`}
-                      className="text-blue-600 underline hover:text-blue-800"
-                    >
-                      {risk.id}
-                    </Link>
-                  </td>
+              {filteredRisks.map((risk) => {
 
-                  <td>
-                    {risk.transaction}
-                  </td>
+                const currentStatus =
+                  riskStatuses[risk.id] || "Open";
 
-                  <td>
-                    {risk.merchant}
-                  </td>
+                return (
+                  <tr
+                    key={risk.id}
+                    className="border-b last:border-0"
+                  >
 
-                  <td className="font-semibold">
-                    {risk.score}
-                  </td>
+                    <td className="py-4 font-medium">
+                      <Link
+                        href={`/risk/${risk.id}`}
+                        className="text-blue-600 underline hover:text-blue-800"
+                      >
+                        {risk.id}
+                      </Link>
+                    </td>
 
-                  <td>
-                    {risk.level === "High" && (
-                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                        High
+                    <td>
+                      <Link
+                        href={`/transactions/${risk.transaction}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {risk.transaction}
+                      </Link>
+                    </td>
+
+                    <td>
+                      {risk.merchant}
+                    </td>
+
+                    <td>
+                      {risk.riskType}
+                    </td>
+
+                    <td>
+                      <span
+                        className={`font-semibold ${
+                          risk.score >= 80
+                            ? "text-red-600"
+                            : risk.score >= 60
+                            ? "text-yellow-600"
+                            : "text-green-600"
+                        }`}
+                      >
+                        {risk.score}
                       </span>
-                    )}
+                    </td>
 
-                    {risk.level === "Medium" && (
-                      <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                        Medium
+                    <td>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          currentStatus === "Open"
+                            ? "bg-red-100 text-red-700"
+                            : currentStatus === "Under Review"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-green-100 text-green-700"
+                        }`}
+                      >
+                        {currentStatus}
                       </span>
-                    )}
-                  </td>
+                    </td>
 
-                  <td>
-                    {risk.status === "Detected" && (
-                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                        Detected
-                      </span>
-                    )}
+                    <td className="text-right">
 
-                    {risk.status === "Reviewing" && (
-                      <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                        Reviewing
-                      </span>
-                    )}
+                      {currentStatus === "Open" && (
+                        <button
+                          onClick={() =>
+                            updateRiskStatus(
+                              risk.id,
+                              "Under Review"
+                            )
+                          }
+                          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                        >
+                          Review
+                        </button>
+                      )}
 
-                    {risk.status === "Mitigated" && (
-                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                        Mitigated
-                      </span>
-                    )}
-                  </td>
+                      {currentStatus === "Under Review" && (
+                        <button
+                          onClick={() =>
+                            updateRiskStatus(
+                              risk.id,
+                              "Resolved"
+                            )
+                          }
+                          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                        >
+                          Resolve
+                        </button>
+                      )}
 
-                </tr>
-              ))}
+                      {currentStatus === "Resolved" && (
+                        <button
+                          disabled
+                          className="cursor-not-allowed rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-500"
+                        >
+                          Resolved
+                        </button>
+                      )}
+
+                    </td>
+
+                  </tr>
+                );
+              })}
+
             </tbody>
 
           </table>
 
           {filteredRisks.length === 0 && (
             <p className="py-8 text-center text-gray-500">
-              No risk records found.
+              No risk alerts found.
             </p>
           )}
+
         </div>
 
       </div>

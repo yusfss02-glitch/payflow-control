@@ -1,9 +1,9 @@
 "use client";
 
 import { use } from "react";
-import { useState } from "react";
 import Link from "next/link";
 import Layout from "@/components/Layout";
+import { useWorkflow } from "@/components/WorkflowContext";
 
 const reconciliationData = {
   REC001: {
@@ -11,55 +11,45 @@ const reconciliationData = {
     transaction: "TXN001",
     merchant: "Hotel A",
     amount: "$1,250",
-    paymentProvider: "Stripe",
-    settlementAmount: "$1,250",
+    expectedAmount: "$1,250",
     difference: "$0",
-    status: "Matched",
-    reason: "Transaction amount successfully matched with settlement record.",
+    provider: "Stripe",
   },
   REC002: {
     id: "REC002",
     transaction: "TXN002",
     merchant: "Hotel B",
     amount: "$980",
-    paymentProvider: "Midtrans",
-    settlementAmount: "$960",
-    difference: "$20",
-    status: "Under Review",
-    reason: "Settlement amount differs from the original transaction amount.",
+    expectedAmount: "$980",
+    difference: "$0",
+    provider: "Midtrans",
   },
   REC003: {
     id: "REC003",
     transaction: "TXN003",
     merchant: "Hotel C",
     amount: "$2,430",
-    paymentProvider: "Stripe",
-    settlementAmount: "$2,100",
-    difference: "$330",
-    status: "Unmatched",
-    reason: "Settlement record could not be matched with the transaction.",
+    expectedAmount: "$2,400",
+    difference: "$30",
+    provider: "Stripe",
   },
   REC004: {
     id: "REC004",
     transaction: "TXN004",
     merchant: "Hotel D",
     amount: "$750",
-    paymentProvider: "Xendit",
-    settlementAmount: "$750",
+    expectedAmount: "$750",
     difference: "$0",
-    status: "Matched",
-    reason: "Transaction amount successfully matched with settlement record.",
+    provider: "Xendit",
   },
   REC005: {
     id: "REC005",
     transaction: "TXN005",
     merchant: "Hotel E",
     amount: "$1,890",
-    paymentProvider: "Stripe",
-    settlementAmount: "$1,700",
-    difference: "$190",
-    status: "Unmatched",
-    reason: "Settlement record requires investigation before matching.",
+    expectedAmount: "$1,850",
+    difference: "$40",
+    provider: "Stripe",
   },
 };
 
@@ -75,9 +65,10 @@ export default function ReconciliationDetail({
       id as keyof typeof reconciliationData
     ];
 
-  const [status, setStatus] = useState(
-    record?.status || "Unmatched"
-  );
+  const {
+    reconciliationStatuses,
+    updateReconciliationStatus,
+  } = useWorkflow();
 
   if (!record) {
     return (
@@ -102,11 +93,14 @@ export default function ReconciliationDetail({
     );
   }
 
+  const status =
+    reconciliationStatuses[record.id] ||
+    "Unmatched";
+
   return (
     <Layout>
       <div className="space-y-6">
 
-        {/* HEADER */}
         <div>
           <Link
             href="/reconciliation"
@@ -122,7 +116,7 @@ export default function ReconciliationDetail({
               </h2>
 
               <p className="mt-1 text-gray-500">
-                Reconciliation matching and settlement investigation.
+                Reconciliation matching and settlement review.
               </p>
             </div>
 
@@ -140,8 +134,8 @@ export default function ReconciliationDetail({
           </div>
         </div>
 
-        {/* WORKFLOW */}
         <div className="rounded-xl bg-white p-6 shadow">
+
           <h3 className="text-lg font-semibold">
             Matching Workflow
           </h3>
@@ -149,7 +143,12 @@ export default function ReconciliationDetail({
           <div className="mt-6 grid grid-cols-3 gap-4">
 
             <button
-              onClick={() => setStatus("Unmatched")}
+              onClick={() =>
+                updateReconciliationStatus(
+                  record.id,
+                  "Unmatched"
+                )
+              }
               className={`rounded-lg border p-4 text-left ${
                 status === "Unmatched"
                   ? "border-red-400 bg-red-50"
@@ -161,12 +160,17 @@ export default function ReconciliationDetail({
               </p>
 
               <p className="mt-1 text-sm text-gray-500">
-                Settlement record requires investigation.
+                Record requires reconciliation review.
               </p>
             </button>
 
             <button
-              onClick={() => setStatus("Under Review")}
+              onClick={() =>
+                updateReconciliationStatus(
+                  record.id,
+                  "Under Review"
+                )
+              }
               className={`rounded-lg border p-4 text-left ${
                 status === "Under Review"
                   ? "border-yellow-400 bg-yellow-50"
@@ -178,12 +182,17 @@ export default function ReconciliationDetail({
               </p>
 
               <p className="mt-1 text-sm text-gray-500">
-                Operations team is reviewing the discrepancy.
+                Operations team is validating the record.
               </p>
             </button>
 
             <button
-              onClick={() => setStatus("Matched")}
+              onClick={() =>
+                updateReconciliationStatus(
+                  record.id,
+                  "Matched"
+                )
+              }
               className={`rounded-lg border p-4 text-left ${
                 status === "Matched"
                   ? "border-green-400 bg-green-50"
@@ -202,7 +211,6 @@ export default function ReconciliationDetail({
           </div>
         </div>
 
-        {/* SUMMARY */}
         <div className="grid grid-cols-3 gap-4">
 
           <div className="rounded-xl bg-white p-5 shadow">
@@ -217,11 +225,11 @@ export default function ReconciliationDetail({
 
           <div className="rounded-xl bg-white p-5 shadow">
             <p className="text-sm text-gray-500">
-              Settlement Amount
+              Expected Settlement
             </p>
 
             <p className="mt-2 text-2xl font-bold">
-              {record.settlementAmount}
+              {record.expectedAmount}
             </p>
           </div>
 
@@ -243,8 +251,8 @@ export default function ReconciliationDetail({
 
         </div>
 
-        {/* DETAILS */}
         <div className="rounded-xl bg-white p-6 shadow">
+
           <h3 className="text-lg font-semibold">
             Reconciliation Details
           </h3>
@@ -273,7 +281,7 @@ export default function ReconciliationDetail({
 
             <div>
               <p className="text-sm text-gray-500">
-                Related Transaction
+                Transaction
               </p>
 
               <Link
@@ -290,7 +298,7 @@ export default function ReconciliationDetail({
               </p>
 
               <p className="mt-1 font-medium">
-                {record.paymentProvider}
+                {record.provider}
               </p>
             </div>
 
@@ -306,47 +314,6 @@ export default function ReconciliationDetail({
 
           </div>
 
-          <div className="mt-6 border-t pt-6">
-            <p className="text-sm text-gray-500">
-              Reconciliation Assessment
-            </p>
-
-            <p className="mt-2">
-              {record.reason}
-            </p>
-          </div>
-        </div>
-
-        {/* RELATED OPERATIONS */}
-        <div className="rounded-xl bg-white p-6 shadow">
-          <h3 className="text-lg font-semibold">
-            Related Operations
-          </h3>
-
-          <div className="mt-5 flex gap-3">
-
-            <Link
-              href={`/transactions/${record.transaction}`}
-              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-            >
-              View Transaction
-            </Link>
-
-            <Link
-              href="/exceptions"
-              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-            >
-              View Exceptions
-            </Link>
-
-            <Link
-              href="/risk"
-              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-            >
-              View Risk
-            </Link>
-
-          </div>
         </div>
 
       </div>
