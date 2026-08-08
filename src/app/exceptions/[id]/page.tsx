@@ -1,9 +1,9 @@
 "use client";
 
 import { use } from "react";
-import { useState } from "react";
 import Link from "next/link";
 import Layout from "@/components/Layout";
+import { useWorkflow } from "@/components/WorkflowContext";
 
 const exceptionData = {
   EXC001: {
@@ -48,7 +48,10 @@ export default function ExceptionDetail({
   const exception =
     exceptionData[id as keyof typeof exceptionData];
 
-  const [status, setStatus] = useState("Open");
+  const {
+    exceptionStatuses,
+    updateExceptionStatus,
+  } = useWorkflow();
 
   if (!exception) {
     return (
@@ -72,6 +75,9 @@ export default function ExceptionDetail({
       </Layout>
     );
   }
+
+  const status =
+    exceptionStatuses[exception.id] || "Open";
 
   return (
     <Layout>
@@ -118,7 +124,12 @@ export default function ExceptionDetail({
           <div className="mt-6 grid grid-cols-3 gap-4">
 
             <button
-              onClick={() => setStatus("Open")}
+              onClick={() =>
+                updateExceptionStatus(
+                  exception.id,
+                  "Open"
+                )
+              }
               className={`rounded-lg border p-4 text-left ${
                 status === "Open"
                   ? "border-red-400 bg-red-50"
@@ -135,7 +146,12 @@ export default function ExceptionDetail({
             </button>
 
             <button
-              onClick={() => setStatus("Under Review")}
+              onClick={() =>
+                updateExceptionStatus(
+                  exception.id,
+                  "Under Review"
+                )
+              }
               className={`rounded-lg border p-4 text-left ${
                 status === "Under Review"
                   ? "border-yellow-400 bg-yellow-50"
@@ -152,7 +168,12 @@ export default function ExceptionDetail({
             </button>
 
             <button
-              onClick={() => setStatus("Resolved")}
+              onClick={() =>
+                updateExceptionStatus(
+                  exception.id,
+                  "Resolved"
+                )
+              }
               className={`rounded-lg border p-4 text-left ${
                 status === "Resolved"
                   ? "border-green-400 bg-green-50"
@@ -265,37 +286,6 @@ export default function ExceptionDetail({
             <p className="mt-2">
               {exception.description}
             </p>
-          </div>
-        </div>
-
-        <div className="rounded-xl bg-white p-6 shadow">
-          <h3 className="text-lg font-semibold">
-            Related Operations
-          </h3>
-
-          <div className="mt-5 flex gap-3">
-
-            <Link
-              href={`/transactions/${exception.transaction}`}
-              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-            >
-              View Transaction
-            </Link>
-
-            <Link
-              href="/reconciliation"
-              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-            >
-              View Reconciliation
-            </Link>
-
-            <Link
-              href="/risk"
-              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-            >
-              View Risk
-            </Link>
-
           </div>
         </div>
 

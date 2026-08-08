@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Layout from "@/components/Layout";
+import { useWorkflow } from "@/components/WorkflowContext";
 
 const exceptions = [
   {
@@ -10,8 +11,6 @@ const exceptions = [
     transaction: "TXN003",
     merchant: "Hotel C",
     type: "Settlement Failure",
-    amount: "$2,430",
-    status: "Open",
     priority: "High",
   },
   {
@@ -19,8 +18,6 @@ const exceptions = [
     transaction: "TXN006",
     merchant: "Hotel F",
     type: "Payment Exception",
-    amount: "$560",
-    status: "Under Review",
     priority: "Medium",
   },
   {
@@ -28,8 +25,6 @@ const exceptions = [
     transaction: "TXN002",
     merchant: "Hotel B",
     type: "Reconciliation Difference",
-    amount: "$980",
-    status: "Resolved",
     priority: "Medium",
   },
 ];
@@ -37,11 +32,20 @@ const exceptions = [
 export default function ExceptionsPage() {
   const [status, setStatus] = useState("All");
 
-  const filteredExceptions = exceptions.filter(
-    (exception) =>
+  const {
+    exceptionStatuses,
+    updateExceptionStatus,
+  } = useWorkflow();
+
+  const filteredExceptions = exceptions.filter((exception) => {
+    const currentStatus =
+      exceptionStatuses[exception.id] || "Open";
+
+    return (
       status === "All" ||
-      exception.status === status
-  );
+      currentStatus === status
+    );
+  });
 
   return (
     <Layout>
@@ -53,7 +57,7 @@ export default function ExceptionsPage() {
           </h2>
 
           <p className="mt-1 text-gray-500">
-            Investigate and resolve payment operational exceptions.
+            Monitor and resolve payment operation exceptions.
           </p>
         </div>
 
@@ -64,35 +68,24 @@ export default function ExceptionsPage() {
 
           <select
             value={status}
-            onChange={(e) =>
-              setStatus(e.target.value)
-            }
+            onChange={(e) => setStatus(e.target.value)}
             className="rounded-lg border bg-white px-4 py-2"
           >
-            <option value="All">
-              All Status
-            </option>
-
-            <option value="Open">
-              Open
-            </option>
-
-            <option value="Under Review">
-              Under Review
-            </option>
-
-            <option value="Resolved">
-              Resolved
-            </option>
+            <option value="All">All Status</option>
+            <option value="Open">Open</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Resolved">Resolved</option>
           </select>
         </div>
 
         <div className="rounded-xl bg-white p-6 shadow">
+
           <table className="w-full text-left">
+
             <thead>
               <tr className="border-b">
                 <th className="pb-3">
-                  Exception
+                  Exception ID
                 </th>
 
                 <th className="pb-3">
@@ -108,22 +101,33 @@ export default function ExceptionsPage() {
                 </th>
 
                 <th className="pb-3">
-                  Amount
+                  Priority
                 </th>
 
                 <th className="pb-3">
                   Status
                 </th>
+
+                <th className="pb-3 text-right">
+                  Action
+                </th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredExceptions.map(
-                (exception) => (
+
+              {filteredExceptions.map((exception) => {
+
+                const currentStatus =
+                  exceptionStatuses[exception.id] ||
+                  "Open";
+
+                return (
                   <tr
                     key={exception.id}
                     className="border-b last:border-0"
                   >
+
                     <td className="py-4 font-medium">
                       <Link
                         href={`/exceptions/${exception.id}`}
@@ -134,7 +138,12 @@ export default function ExceptionsPage() {
                     </td>
 
                     <td>
-                      {exception.transaction}
+                      <Link
+                        href={`/transactions/${exception.transaction}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {exception.transaction}
+                      </Link>
                     </td>
 
                     <td>
@@ -146,32 +155,78 @@ export default function ExceptionsPage() {
                     </td>
 
                     <td>
-                      {exception.amount}
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          exception.priority === "High"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {exception.priority}
+                      </span>
                     </td>
 
                     <td>
-                      {exception.status === "Open" && (
-                        <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                          Open
-                        </span>
-                      )}
-
-                      {exception.status === "Under Review" && (
-                        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                          Under Review
-                        </span>
-                      )}
-
-                      {exception.status === "Resolved" && (
-                        <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                          Resolved
-                        </span>
-                      )}
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          currentStatus === "Open"
+                            ? "bg-red-100 text-red-700"
+                            : currentStatus === "Under Review"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-green-100 text-green-700"
+                        }`}
+                      >
+                        {currentStatus}
+                      </span>
                     </td>
+
+                    <td className="text-right">
+
+                      {currentStatus === "Open" && (
+                        <button
+                          onClick={() =>
+                            updateExceptionStatus(
+                              exception.id,
+                              "Under Review"
+                            )
+                          }
+                          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                        >
+                          Start Review
+                        </button>
+                      )}
+
+                      {currentStatus === "Under Review" && (
+                        <button
+                          onClick={() =>
+                            updateExceptionStatus(
+                              exception.id,
+                              "Resolved"
+                            )
+                          }
+                          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                        >
+                          Resolve
+                        </button>
+                      )}
+
+                      {currentStatus === "Resolved" && (
+                        <button
+                          disabled
+                          className="cursor-not-allowed rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-500"
+                        >
+                          Resolved
+                        </button>
+                      )}
+
+                    </td>
+
                   </tr>
-                )
-              )}
+                );
+              })}
+
             </tbody>
+
           </table>
 
           {filteredExceptions.length === 0 && (
@@ -179,6 +234,7 @@ export default function ExceptionsPage() {
               No exceptions found.
             </p>
           )}
+
         </div>
 
       </div>

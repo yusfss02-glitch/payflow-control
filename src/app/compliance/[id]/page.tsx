@@ -1,9 +1,9 @@
 "use client";
 
 import { use } from "react";
-import { useState } from "react";
 import Link from "next/link";
 import Layout from "@/components/Layout";
+import { useWorkflow } from "@/components/WorkflowContext";
 
 const complianceData = {
   CMP001: {
@@ -51,7 +51,10 @@ export default function ComplianceDetail({
   const compliance =
     complianceData[id as keyof typeof complianceData];
 
-  const [status, setStatus] = useState("Pending Review");
+  const {
+    complianceStatuses,
+    updateComplianceStatus,
+  } = useWorkflow();
 
   if (!compliance) {
     return (
@@ -60,10 +63,6 @@ export default function ComplianceDetail({
           <h2 className="text-2xl font-bold">
             Compliance Record Not Found
           </h2>
-
-          <p className="mt-2 text-gray-500">
-            The requested compliance record does not exist.
-          </p>
 
           <Link
             href="/compliance"
@@ -76,11 +75,14 @@ export default function ComplianceDetail({
     );
   }
 
+  const status =
+    complianceStatuses[compliance.id] ||
+    "Pending Review";
+
   return (
     <Layout>
       <div className="space-y-6">
 
-        {/* HEADER */}
         <div>
           <Link
             href="/compliance"
@@ -116,86 +118,53 @@ export default function ComplianceDetail({
           </div>
         </div>
 
-        {/* WORKFLOW */}
         <div className="rounded-xl bg-white p-6 shadow">
+
           <h3 className="text-lg font-semibold">
             Compliance Workflow
           </h3>
 
           <div className="mt-6 grid grid-cols-4 gap-4">
 
-            <button
-              onClick={() => setStatus("Pending Review")}
-              className={`rounded-lg border p-4 text-left ${
-                status === "Pending Review"
-                  ? "border-gray-400 bg-gray-50"
-                  : "hover:bg-gray-50"
-              }`}
-            >
-              <p className="font-semibold">
-                1. Pending Review
-              </p>
+            {[
+              "Pending Review",
+              "Reviewing",
+              "Approved",
+              "Rejected",
+            ].map((workflowStatus, index) => (
+              <button
+                key={workflowStatus}
+                onClick={() =>
+                  updateComplianceStatus(
+                    compliance.id,
+                    workflowStatus
+                  )
+                }
+                className={`rounded-lg border p-4 text-left ${
+                  status === workflowStatus
+                    ? "border-blue-400 bg-blue-50"
+                    : "hover:bg-gray-50"
+                }`}
+              >
+                <p className="font-semibold">
+                  {index + 1}. {workflowStatus}
+                </p>
 
-              <p className="mt-1 text-sm text-gray-500">
-                Compliance case is awaiting review.
-              </p>
-            </button>
-
-            <button
-              onClick={() => setStatus("Reviewing")}
-              className={`rounded-lg border p-4 text-left ${
-                status === "Reviewing"
-                  ? "border-yellow-400 bg-yellow-50"
-                  : "hover:bg-gray-50"
-              }`}
-            >
-              <p className="font-semibold">
-                2. Reviewing
-              </p>
-
-              <p className="mt-1 text-sm text-gray-500">
-                Compliance analyst is reviewing the case.
-              </p>
-            </button>
-
-            <button
-              onClick={() => setStatus("Approved")}
-              className={`rounded-lg border p-4 text-left ${
-                status === "Approved"
-                  ? "border-green-400 bg-green-50"
-                  : "hover:bg-gray-50"
-              }`}
-            >
-              <p className="font-semibold">
-                3. Approved
-              </p>
-
-              <p className="mt-1 text-sm text-gray-500">
-                Review completed and case approved.
-              </p>
-            </button>
-
-            <button
-              onClick={() => setStatus("Rejected")}
-              className={`rounded-lg border p-4 text-left ${
-                status === "Rejected"
-                  ? "border-red-400 bg-red-50"
-                  : "hover:bg-gray-50"
-              }`}
-            >
-              <p className="font-semibold">
-                4. Rejected
-              </p>
-
-              <p className="mt-1 text-sm text-gray-500">
-                Case failed compliance review.
-              </p>
-            </button>
+                <p className="mt-1 text-sm text-gray-500">
+                  {workflowStatus === "Pending Review"
+                    ? "Case is awaiting review."
+                    : workflowStatus === "Reviewing"
+                    ? "Analyst is reviewing the case."
+                    : workflowStatus === "Approved"
+                    ? "Case has been approved."
+                    : "Case has been rejected."}
+                </p>
+              </button>
+            ))}
 
           </div>
         </div>
 
-        {/* SUMMARY */}
         <div className="grid grid-cols-3 gap-4">
 
           <div className="rounded-xl bg-white p-5 shadow">
@@ -230,8 +199,8 @@ export default function ComplianceDetail({
 
         </div>
 
-        {/* DETAILS */}
         <div className="rounded-xl bg-white p-6 shadow">
+
           <h3 className="text-lg font-semibold">
             Compliance Details
           </h3>
@@ -284,6 +253,7 @@ export default function ComplianceDetail({
           </div>
 
           <div className="mt-6 border-t pt-6">
+
             <p className="text-sm text-gray-500">
               Assessment
             </p>
@@ -291,39 +261,9 @@ export default function ComplianceDetail({
             <p className="mt-2">
               {compliance.description}
             </p>
-          </div>
-        </div>
-
-        {/* RELATED OPERATIONS */}
-        <div className="rounded-xl bg-white p-6 shadow">
-          <h3 className="text-lg font-semibold">
-            Related Operations
-          </h3>
-
-          <div className="mt-5 flex gap-3">
-
-            <Link
-              href={`/transactions/${compliance.transaction}`}
-              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-            >
-              View Transaction
-            </Link>
-
-            <Link
-              href="/risk"
-              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-            >
-              View Risk
-            </Link>
-
-            <Link
-              href="/exceptions"
-              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
-            >
-              View Exceptions
-            </Link>
 
           </div>
+
         </div>
 
       </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Layout from "@/components/Layout";
+import { useWorkflow } from "@/components/WorkflowContext";
 
 const complianceRecords = [
   {
@@ -11,7 +12,6 @@ const complianceRecords = [
     merchant: "Hotel C",
     type: "Transaction Monitoring",
     priority: "High",
-    status: "Pending Review",
   },
   {
     id: "CMP002",
@@ -19,7 +19,6 @@ const complianceRecords = [
     merchant: "Hotel F",
     type: "Payment Monitoring",
     priority: "Medium",
-    status: "Reviewing",
   },
   {
     id: "CMP003",
@@ -27,16 +26,25 @@ const complianceRecords = [
     merchant: "Hotel B",
     type: "Settlement Monitoring",
     priority: "Medium",
-    status: "Approved",
   },
 ];
 
 export default function CompliancePage() {
   const [status, setStatus] = useState("All");
 
+  const { complianceStatuses } = useWorkflow();
+
   const filteredRecords = complianceRecords.filter(
-    (record) =>
-      status === "All" || record.status === status
+    (record) => {
+      const currentStatus =
+        complianceStatuses[record.id] ||
+        "Pending Review";
+
+      return (
+        status === "All" ||
+        currentStatus === status
+      );
+    }
   );
 
   return (
@@ -54,13 +62,16 @@ export default function CompliancePage() {
         </div>
 
         <div className="flex items-center justify-between">
+
           <h3 className="text-xl font-semibold">
             Compliance Queue
           </h3>
 
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) =>
+              setStatus(e.target.value)
+            }
             className="rounded-lg border bg-white px-4 py-2"
           >
             <option value="All">
@@ -83,13 +94,16 @@ export default function CompliancePage() {
               Rejected
             </option>
           </select>
+
         </div>
 
         <div className="rounded-xl bg-white p-6 shadow">
+
           <table className="w-full text-left">
 
             <thead>
               <tr className="border-b">
+
                 <th className="pb-3">
                   Compliance ID
                 </th>
@@ -113,84 +127,82 @@ export default function CompliancePage() {
                 <th className="pb-3">
                   Status
                 </th>
+
               </tr>
             </thead>
 
             <tbody>
-              {filteredRecords.map((record) => (
-                <tr
-                  key={record.id}
-                  className="border-b last:border-0"
-                >
 
-                  <td className="py-4 font-medium">
-                    <Link
-                      href={`/compliance/${record.id}`}
-                      className="text-blue-600 underline hover:text-blue-800"
-                    >
-                      {record.id}
-                    </Link>
-                  </td>
+              {filteredRecords.map((record) => {
 
-                  <td>
-                    <Link
-                      href={`/transactions/${record.transaction}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      {record.transaction}
-                    </Link>
-                  </td>
+                const currentStatus =
+                  complianceStatuses[record.id] ||
+                  "Pending Review";
 
-                  <td>
-                    {record.merchant}
-                  </td>
+                return (
+                  <tr
+                    key={record.id}
+                    className="border-b last:border-0"
+                  >
 
-                  <td>
-                    {record.type}
-                  </td>
+                    <td className="py-4 font-medium">
+                      <Link
+                        href={`/compliance/${record.id}`}
+                        className="text-blue-600 underline hover:text-blue-800"
+                      >
+                        {record.id}
+                      </Link>
+                    </td>
 
-                  <td>
-                    {record.priority === "High" && (
-                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                        High
+                    <td>
+                      <Link
+                        href={`/transactions/${record.transaction}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {record.transaction}
+                      </Link>
+                    </td>
+
+                    <td>
+                      {record.merchant}
+                    </td>
+
+                    <td>
+                      {record.type}
+                    </td>
+
+                    <td>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          record.priority === "High"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {record.priority}
                       </span>
-                    )}
+                    </td>
 
-                    {record.priority === "Medium" && (
-                      <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                        Medium
+                    <td>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          currentStatus === "Pending Review"
+                            ? "bg-gray-100 text-gray-700"
+                            : currentStatus === "Reviewing"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : currentStatus === "Approved"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {currentStatus}
                       </span>
-                    )}
-                  </td>
+                    </td>
 
-                  <td>
-                    {record.status === "Pending Review" && (
-                      <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
-                        Pending Review
-                      </span>
-                    )}
+                  </tr>
+                );
+              })}
 
-                    {record.status === "Reviewing" && (
-                      <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                        Reviewing
-                      </span>
-                    )}
-
-                    {record.status === "Approved" && (
-                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                        Approved
-                      </span>
-                    )}
-
-                    {record.status === "Rejected" && (
-                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                        Rejected
-                      </span>
-                    )}
-                  </td>
-
-                </tr>
-              ))}
             </tbody>
 
           </table>
@@ -200,6 +212,7 @@ export default function CompliancePage() {
               No compliance records found.
             </p>
           )}
+
         </div>
 
       </div>
