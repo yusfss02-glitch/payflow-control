@@ -47,8 +47,7 @@ export default function ReconciliationPage() {
 
   const filteredRecords = records.filter(
     (record) =>
-      status === "All" ||
-      record.status === status
+      status === "All" || record.status === status
   );
 
   return (
@@ -100,15 +99,14 @@ export default function ReconciliationPage() {
         </div>
 
         <div className="flex items-center justify-between">
+
           <h3 className="text-xl font-semibold">
             Reconciliation Queue
           </h3>
 
           <select
             value={status}
-            onChange={(e) =>
-              setStatus(e.target.value)
-            }
+            onChange={(e) => setStatus(e.target.value)}
             className="rounded-lg border bg-white px-4 py-2"
           >
             <option value="All">
@@ -127,12 +125,16 @@ export default function ReconciliationPage() {
               Under Review
             </option>
           </select>
+
         </div>
 
         <div className="rounded-xl bg-white p-6 shadow">
+
           <table className="w-full text-left">
+
             <thead>
               <tr className="border-b">
+
                 <th className="pb-3">
                   Record
                 </th>
@@ -152,26 +154,34 @@ export default function ReconciliationPage() {
                 <th className="pb-3">
                   Status
                 </th>
+
               </tr>
             </thead>
 
             <tbody>
+
               {filteredRecords.map((record) => (
                 <tr
                   key={record.id}
                   className="border-b last:border-0"
                 >
+
                   <td className="py-4 font-medium">
                     <Link
                       href={`/reconciliation/${record.id}`}
-                      className="inline-block text-blue-600 underline hover:text-blue-800"
+                      className="text-blue-600 underline hover:text-blue-800"
                     >
                       {record.id}
                     </Link>
                   </td>
 
                   <td>
-                    {record.transaction}
+                    <Link
+                      href={`/transactions/${record.transaction}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {record.transaction}
+                    </Link>
                   </td>
 
                   <td>
@@ -183,6 +193,7 @@ export default function ReconciliationPage() {
                   </td>
 
                   <td>
+
                     {record.status === "Matched" && (
                       <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
                         Matched
@@ -200,11 +211,22 @@ export default function ReconciliationPage() {
                         Under Review
                       </span>
                     )}
+
                   </td>
+
                 </tr>
               ))}
+
             </tbody>
+
           </table>
+
+          {filteredRecords.length === 0 && (
+            <p className="py-8 text-center text-gray-500">
+              No reconciliation records found.
+            </p>
+          )}
+
         </div>
 
       </div>
