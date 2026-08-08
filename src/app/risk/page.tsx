@@ -1,269 +1,195 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Layout from "@/components/Layout";
 
-type RiskStatus = "Open" | "Under Review" | "Resolved";
-type RiskLevel = "High" | "Medium" | "Low";
-
-type RiskAlert = {
-  id: string;
-  transaction: string;
-  merchant: string;
-  riskType: string;
-  level: RiskLevel;
-  status: RiskStatus;
-};
-
-const initialAlerts: RiskAlert[] = [
+const risks = [
   {
     id: "RISK001",
-    transaction: "TXN007",
-    merchant: "Hotel G",
-    riskType: "Unusual Transaction",
+    transaction: "TXN003",
+    merchant: "Hotel C",
+    score: 87,
     level: "High",
-    status: "Open",
+    status: "Detected",
   },
   {
     id: "RISK002",
-    transaction: "TXN008",
-    merchant: "Hotel H",
-    riskType: "Multiple Failed Payments",
+    transaction: "TXN006",
+    merchant: "Hotel F",
+    score: 72,
     level: "Medium",
-    status: "Open",
+    status: "Reviewing",
   },
   {
     id: "RISK003",
-    transaction: "TXN009",
-    merchant: "Hotel I",
-    riskType: "Settlement Anomaly",
-    level: "High",
-    status: "Under Review",
-  },
-  {
-    id: "RISK004",
-    transaction: "TXN010",
-    merchant: "Hotel J",
-    riskType: "Amount Threshold",
-    level: "Low",
-    status: "Resolved",
+    transaction: "TXN002",
+    merchant: "Hotel B",
+    score: 54,
+    level: "Medium",
+    status: "Mitigated",
   },
 ];
 
 export default function RiskPage() {
-  const [alerts, setAlerts] =
-    useState<RiskAlert[]>(initialAlerts);
+  const [status, setStatus] = useState("All");
 
-  const [filter, setFilter] = useState("All");
-
-  const handleReview = (id: string) => {
-    setAlerts((current) =>
-      current.map((alert) =>
-        alert.id === id
-          ? { ...alert, status: "Under Review" }
-          : alert
-      )
-    );
-  };
-
-  const handleResolve = (id: string) => {
-    setAlerts((current) =>
-      current.map((alert) =>
-        alert.id === id
-          ? { ...alert, status: "Resolved" }
-          : alert
-      )
-    );
-  };
-
-  const filteredAlerts = alerts.filter(
-    (alert) =>
-      filter === "All" || alert.level === filter
+  const filteredRisks = risks.filter(
+    (risk) =>
+      status === "All" ||
+      risk.status === status
   );
-
-  const highCount = alerts.filter(
-    (alert) => alert.level === "High"
-  ).length;
-
-  const mediumCount = alerts.filter(
-    (alert) => alert.level === "Medium"
-  ).length;
-
-  const openCount = alerts.filter(
-    (alert) => alert.status === "Open"
-  ).length;
 
   return (
     <Layout>
       <div className="space-y-6">
+
         <div>
           <h2 className="text-3xl font-bold">
             Risk Monitoring
           </h2>
 
           <p className="mt-1 text-gray-500">
-            Monitor payment risk signals and review high-risk transactions.
+            Monitor transaction risk signals and mitigation activities.
           </p>
         </div>
 
-        {/* KPI CARDS */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">
-              High Risk Alerts
-            </p>
-
-            <p className="mt-2 text-3xl font-bold">
-              {highCount}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">
-              Medium Risk Alerts
-            </p>
-
-            <p className="mt-2 text-3xl font-bold">
-              {mediumCount}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">
-              Open Risk Alerts
-            </p>
-
-            <p className="mt-2 text-3xl font-bold">
-              {openCount}
-            </p>
-          </div>
-        </div>
-
-        {/* QUEUE HEADER */}
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold">
-            Risk Alert Queue
+            Risk Queue
           </h3>
 
           <select
-            value={filter}
-            onChange={(event) =>
-              setFilter(event.target.value)
+            value={status}
+            onChange={(e) =>
+              setStatus(e.target.value)
             }
             className="rounded-lg border bg-white px-4 py-2"
           >
-            <option value="All">All Risk Levels</option>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
+            <option value="All">
+              All Status
+            </option>
+
+            <option value="Detected">
+              Detected
+            </option>
+
+            <option value="Reviewing">
+              Reviewing
+            </option>
+
+            <option value="Mitigated">
+              Mitigated
+            </option>
           </select>
         </div>
 
-        {/* TABLE */}
         <div className="rounded-xl bg-white p-6 shadow">
           <table className="w-full text-left">
+
             <thead>
               <tr className="border-b">
-                <th className="pb-3">Alert</th>
-                <th className="pb-3">Transaction</th>
-                <th className="pb-3">Merchant</th>
-                <th className="pb-3">Risk Type</th>
-                <th className="pb-3">Risk Level</th>
-                <th className="pb-3">Status</th>
-                <th className="pb-3">Action</th>
+                <th className="pb-3">
+                  Risk ID
+                </th>
+
+                <th className="pb-3">
+                  Transaction
+                </th>
+
+                <th className="pb-3">
+                  Merchant
+                </th>
+
+                <th className="pb-3">
+                  Risk Score
+                </th>
+
+                <th className="pb-3">
+                  Level
+                </th>
+
+                <th className="pb-3">
+                  Status
+                </th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredAlerts.map((alert) => (
+              {filteredRisks.map((risk) => (
                 <tr
-                  key={alert.id}
+                  key={risk.id}
                   className="border-b last:border-0"
                 >
+
                   <td className="py-4 font-medium">
-                    {alert.id}
+                    <Link
+                      href={`/risk/${risk.id}`}
+                      className="text-blue-600 underline hover:text-blue-800"
+                    >
+                      {risk.id}
+                    </Link>
                   </td>
 
-                  <td>{alert.transaction}</td>
-
-                  <td>{alert.merchant}</td>
-
-                  <td>{alert.riskType}</td>
+                  <td>
+                    {risk.transaction}
+                  </td>
 
                   <td>
-                    {alert.level === "High" && (
+                    {risk.merchant}
+                  </td>
+
+                  <td className="font-semibold">
+                    {risk.score}
+                  </td>
+
+                  <td>
+                    {risk.level === "High" && (
                       <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
                         High
                       </span>
                     )}
 
-                    {alert.level === "Medium" && (
+                    {risk.level === "Medium" && (
                       <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
                         Medium
                       </span>
                     )}
-
-                    {alert.level === "Low" && (
-                      <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-                        Low
-                      </span>
-                    )}
                   </td>
 
                   <td>
-                    {alert.status === "Open" && (
+                    {risk.status === "Detected" && (
                       <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                        Open
+                        Detected
                       </span>
                     )}
 
-                    {alert.status === "Under Review" && (
+                    {risk.status === "Reviewing" && (
                       <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                        Under Review
+                        Reviewing
                       </span>
                     )}
 
-                    {alert.status === "Resolved" && (
+                    {risk.status === "Mitigated" && (
                       <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                        Resolved
+                        Mitigated
                       </span>
                     )}
                   </td>
 
-                  <td>
-                    {alert.status === "Open" && (
-                      <button
-                        onClick={() =>
-                          handleReview(alert.id)
-                        }
-                        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                      >
-                        Review
-                      </button>
-                    )}
-
-                    {alert.status === "Under Review" && (
-                      <button
-                        onClick={() =>
-                          handleResolve(alert.id)
-                        }
-                        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                      >
-                        Resolve
-                      </button>
-                    )}
-
-                    {alert.status === "Resolved" && (
-                      <span className="text-sm text-gray-400">
-                        Completed
-                      </span>
-                    )}
-                  </td>
                 </tr>
               ))}
             </tbody>
+
           </table>
+
+          {filteredRisks.length === 0 && (
+            <p className="py-8 text-center text-gray-500">
+              No risk records found.
+            </p>
+          )}
         </div>
+
       </div>
     </Layout>
   );
