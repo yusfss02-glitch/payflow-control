@@ -76,7 +76,9 @@ export default function ReconciliationPage() {
         </div>
 
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold">Reconciliation Queue</h3>
+          <h3 className="text-xl font-semibold">
+            Reconciliation Queue
+          </h3>
 
           <select
             value={status}
@@ -104,12 +106,64 @@ export default function ReconciliationPage() {
 
             <tbody>
               {filteredRecords.map((record) => (
-                <tr key={record.id} className="border-b last:border-0">
+                <tr
+                  key={record.id}
+                  className="border-b last:border-0"
+                >
                   <td className="py-4 font-medium">{record.id}</td>
                   <td>{record.transaction}</td>
                   <td>{record.merchant}</td>
                   <td>{record.amount}</td>
-                  <td>{record.status}</td>
+
+                  <td>
+                    {record.status === "Matched" && (
+                      <span
+                        style={{
+                          backgroundColor: "#dcfce7",
+                          color: "#15803d",
+                          padding: "4px 12px",
+                          borderRadius: "9999px",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          display: "inline-block",
+                        }}
+                      >
+                        Matched
+                      </span>
+                    )}
+
+                    {record.status === "Unmatched" && (
+                      <span
+                        style={{
+                          backgroundColor: "#fee2e2",
+                          color: "#b91c1c",
+                          padding: "4px 12px",
+                          borderRadius: "9999px",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          display: "inline-block",
+                        }}
+                      >
+                        Unmatched
+                      </span>
+                    )}
+
+                    {record.status === "Under Review" && (
+                      <span
+                        style={{
+                          backgroundColor: "#fef3c7",
+                          color: "#b45309",
+                          padding: "4px 12px",
+                          borderRadius: "9999px",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          display: "inline-block",
+                        }}
+                      >
+                        Under Review
+                      </span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
