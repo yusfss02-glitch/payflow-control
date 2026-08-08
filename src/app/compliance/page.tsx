@@ -8,37 +8,47 @@ import { useWorkflow } from "@/components/WorkflowContext";
 const complianceRecords = [
   {
     id: "CMP001",
-    transaction: "TXN003",
-    merchant: "Hotel C",
-    type: "Transaction Monitoring",
-    priority: "High",
+    merchant: "Hotel A",
+    requirement: "KYC Verification",
+    status: "Pending Review",
+    risk: "Medium",
   },
   {
     id: "CMP002",
-    transaction: "TXN006",
-    merchant: "Hotel F",
-    type: "Payment Monitoring",
-    priority: "Medium",
+    merchant: "Hotel B",
+    requirement: "Business Verification",
+    status: "Approved",
+    risk: "Low",
   },
   {
     id: "CMP003",
-    transaction: "TXN002",
-    merchant: "Hotel B",
-    type: "Settlement Monitoring",
-    priority: "Medium",
+    merchant: "Hotel C",
+    requirement: "Transaction Monitoring",
+    status: "Pending Review",
+    risk: "High",
+  },
+  {
+    id: "CMP004",
+    merchant: "Hotel D",
+    requirement: "KYC Verification",
+    status: "Rejected",
+    risk: "High",
   },
 ];
 
 export default function CompliancePage() {
   const [status, setStatus] = useState("All");
 
-  const { complianceStatuses } = useWorkflow();
+  const {
+    complianceStatuses,
+    updateComplianceStatus,
+  } = useWorkflow();
 
   const filteredRecords = complianceRecords.filter(
     (record) => {
       const currentStatus =
         complianceStatuses[record.id] ||
-        "Pending Review";
+        record.status;
 
       return (
         status === "All" ||
@@ -49,6 +59,7 @@ export default function CompliancePage() {
 
   return (
     <Layout>
+
       <div className="space-y-6">
 
         <div>
@@ -57,8 +68,69 @@ export default function CompliancePage() {
           </h2>
 
           <p className="mt-1 text-gray-500">
-            Monitor compliance cases and review activities.
+            Monitor compliance reviews and merchant verification status.
           </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-gray-500">
+              Pending Review
+            </p>
+
+            <p className="mt-2 text-3xl font-bold">
+              {
+                complianceRecords.filter(
+                  (record) =>
+                    (
+                      complianceStatuses[
+                        record.id
+                      ] || record.status
+                    ) === "Pending Review"
+                ).length
+              }
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-gray-500">
+              Approved
+            </p>
+
+            <p className="mt-2 text-3xl font-bold">
+              {
+                complianceRecords.filter(
+                  (record) =>
+                    (
+                      complianceStatuses[
+                        record.id
+                      ] || record.status
+                    ) === "Approved"
+                ).length
+              }
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-gray-500">
+              Rejected
+            </p>
+
+            <p className="mt-2 text-3xl font-bold">
+              {
+                complianceRecords.filter(
+                  (record) =>
+                    (
+                      complianceStatuses[
+                        record.id
+                      ] || record.status
+                    ) === "Rejected"
+                ).length
+              }
+            </p>
+          </div>
+
         </div>
 
         <div className="flex items-center justify-between">
@@ -80,10 +152,6 @@ export default function CompliancePage() {
 
             <option value="Pending Review">
               Pending Review
-            </option>
-
-            <option value="Reviewing">
-              Reviewing
             </option>
 
             <option value="Approved">
@@ -109,23 +177,23 @@ export default function CompliancePage() {
                 </th>
 
                 <th className="pb-3">
-                  Transaction
-                </th>
-
-                <th className="pb-3">
                   Merchant
                 </th>
 
                 <th className="pb-3">
-                  Type
+                  Requirement
                 </th>
 
                 <th className="pb-3">
-                  Priority
+                  Risk
                 </th>
 
                 <th className="pb-3">
                   Status
+                </th>
+
+                <th className="pb-3 text-right">
+                  Action
                 </th>
 
               </tr>
@@ -133,75 +201,111 @@ export default function CompliancePage() {
 
             <tbody>
 
-              {filteredRecords.map((record) => {
+              {filteredRecords.map(
+                (record) => {
 
-                const currentStatus =
-                  complianceStatuses[record.id] ||
-                  "Pending Review";
+                  const currentStatus =
+                    complianceStatuses[
+                      record.id
+                    ] || record.status;
 
-                return (
-                  <tr
-                    key={record.id}
-                    className="border-b last:border-0"
-                  >
+                  return (
+                    <tr
+                      key={record.id}
+                      className="border-b last:border-0"
+                    >
 
-                    <td className="py-4 font-medium">
-                      <Link
-                        href={`/compliance/${record.id}`}
-                        className="text-blue-600 underline hover:text-blue-800"
-                      >
-                        {record.id}
-                      </Link>
-                    </td>
+                      <td className="py-4 font-medium">
 
-                    <td>
-                      <Link
-                        href={`/transactions/${record.transaction}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        {record.transaction}
-                      </Link>
-                    </td>
+                        <Link
+                          href={`/compliance/${record.id}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {record.id}
+                        </Link>
 
-                    <td>
-                      {record.merchant}
-                    </td>
+                      </td>
 
-                    <td>
-                      {record.type}
-                    </td>
+                      <td>
+                        {record.merchant}
+                      </td>
 
-                    <td>
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          record.priority === "High"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {record.priority}
-                      </span>
-                    </td>
+                      <td>
+                        {record.requirement}
+                      </td>
 
-                    <td>
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          currentStatus === "Pending Review"
-                            ? "bg-gray-100 text-gray-700"
-                            : currentStatus === "Reviewing"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : currentStatus === "Approved"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {currentStatus}
-                      </span>
-                    </td>
+                      <td>
 
-                  </tr>
-                );
-              })}
+                        <span
+                          className={`font-semibold ${
+                            record.risk === "High"
+                              ? "text-red-600"
+                              : record.risk === "Medium"
+                              ? "text-yellow-600"
+                              : "text-green-600"
+                          }`}
+                        >
+                          {record.risk}
+                        </span>
+
+                      </td>
+
+                      <td>
+
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            currentStatus ===
+                            "Approved"
+                              ? "bg-green-100 text-green-700"
+                              : currentStatus ===
+                                "Rejected"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
+                          {currentStatus}
+                        </span>
+
+                      </td>
+
+                      <td className="text-right">
+
+                        {currentStatus ===
+                          "Pending Review" && (
+                          <Link
+                            href={`/compliance/${record.id}`}
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                          >
+                            Review
+                          </Link>
+                        )}
+
+                        {currentStatus ===
+                          "Approved" && (
+                          <button
+                            disabled
+                            className="cursor-not-allowed rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-500"
+                          >
+                            Approved
+                          </button>
+                        )}
+
+                        {currentStatus ===
+                          "Rejected" && (
+                          <button
+                            disabled
+                            className="cursor-not-allowed rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-500"
+                          >
+                            Rejected
+                          </button>
+                        )}
+
+                      </td>
+
+                    </tr>
+                  );
+                }
+              )}
 
             </tbody>
 
@@ -216,6 +320,7 @@ export default function CompliancePage() {
         </div>
 
       </div>
+
     </Layout>
   );
 }
