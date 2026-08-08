@@ -3,132 +3,287 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
 
-const initialItems = [
+type ComplianceStatus =
+  | "Compliant"
+  | "Under Review"
+  | "Action Required";
+
+type ComplianceItem = {
+  id: string;
+  area: string;
+  requirement: string;
+  merchant: string;
+  status: ComplianceStatus;
+  dueDate: string;
+};
+
+const initialItems: ComplianceItem[] = [
   {
     id: "CMP001",
-    category: "Transaction Monitoring",
-    requirement: "High-value transaction review",
-    owner: "Risk Operations",
+    area: "KYC",
+    requirement: "Merchant Verification",
+    merchant: "Hotel A",
     status: "Compliant",
+    dueDate: "Aug 12, 2026",
   },
   {
     id: "CMP002",
-    category: "Reconciliation",
-    requirement: "Unmatched transaction investigation",
-    owner: "Finance Operations",
+    area: "Transaction Monitoring",
+    requirement: "High-Risk Transaction Review",
+    merchant: "Hotel C",
     status: "Action Required",
+    dueDate: "Aug 10, 2026",
   },
   {
     id: "CMP003",
-    category: "Exception Management",
-    requirement: "Exception resolution tracking",
-    owner: "Payment Operations",
-    status: "Compliant",
+    area: "AML",
+    requirement: "Suspicious Activity Review",
+    merchant: "Hotel F",
+    status: "Under Review",
+    dueDate: "Aug 14, 2026",
   },
   {
     id: "CMP004",
-    category: "Audit Trail",
-    requirement: "Operational activity logging",
-    owner: "System",
-    status: "Under Review",
+    area: "Settlement",
+    requirement: "Settlement Control Check",
+    merchant: "Hotel D",
+    status: "Compliant",
+    dueDate: "Aug 18, 2026",
   },
 ];
 
 export default function CompliancePage() {
-  const [items, setItems] = useState(initialItems);
-  const [status, setStatus] = useState("All");
+  const [items, setItems] =
+    useState<ComplianceItem[]>(initialItems);
 
-  const filteredItems = items.filter(
-    (item) => status === "All" || item.status === status
-  );
+  const [filter, setFilter] = useState("All");
 
-  const resolveItem = (id: string) => {
+  const handleReview = (id: string) => {
     setItems((current) =>
       current.map((item) =>
         item.id === id
-          ? { ...item, status: "Compliant" }
+          ? {
+              ...item,
+              status: "Under Review",
+            }
           : item
       )
     );
   };
 
+  const handleResolve = (id: string) => {
+    setItems((current) =>
+      current.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              status: "Compliant",
+            }
+          : item
+      )
+    );
+  };
+
+  const filteredItems = items.filter(
+    (item) =>
+      filter === "All" || item.status === filter
+  );
+
+  const compliantCount = items.filter(
+    (item) => item.status === "Compliant"
+  ).length;
+
+  const reviewCount = items.filter(
+    (item) => item.status === "Under Review"
+  ).length;
+
+  const actionCount = items.filter(
+    (item) => item.status === "Action Required"
+  ).length;
+
   return (
     <Layout>
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold">Compliance</h2>
+          <h2 className="text-3xl font-bold">
+            Compliance
+          </h2>
+
           <p className="mt-1 text-gray-500">
-            Monitor operational controls and compliance-related activities.
+            Monitor compliance controls and required actions across payment operations.
           </p>
         </div>
 
+        {/* KPI CARDS */}
         <div className="grid grid-cols-3 gap-4">
           <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">Compliant</p>
+            <p className="text-sm text-gray-500">
+              Compliant
+            </p>
+
             <p className="mt-2 text-3xl font-bold">
-              {items.filter((item) => item.status === "Compliant").length}
+              {compliantCount}
             </p>
           </div>
 
           <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">Action Required</p>
+            <p className="text-sm text-gray-500">
+              Under Review
+            </p>
+
             <p className="mt-2 text-3xl font-bold">
-              {items.filter((item) => item.status === "Action Required").length}
+              {reviewCount}
             </p>
           </div>
 
           <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">Under Review</p>
+            <p className="text-sm text-gray-500">
+              Action Required
+            </p>
+
             <p className="mt-2 text-3xl font-bold">
-              {items.filter((item) => item.status === "Under Review").length}
+              {actionCount}
             </p>
           </div>
         </div>
 
+        {/* QUEUE HEADER */}
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold">Compliance Control Monitor</h3>
+          <h3 className="text-xl font-semibold">
+            Compliance Control Queue
+          </h3>
 
           <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            value={filter}
+            onChange={(event) =>
+              setFilter(event.target.value)
+            }
             className="rounded-lg border bg-white px-4 py-2"
           >
-            <option value="All">All Status</option>
-            <option value="Compliant">Compliant</option>
-            <option value="Action Required">Action Required</option>
-            <option value="Under Review">Under Review</option>
+            <option value="All">
+              All Status
+            </option>
+
+            <option value="Compliant">
+              Compliant
+            </option>
+
+            <option value="Under Review">
+              Under Review
+            </option>
+
+            <option value="Action Required">
+              Action Required
+            </option>
           </select>
         </div>
 
+        {/* TABLE */}
         <div className="rounded-xl bg-white p-6 shadow">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b">
-                <th className="pb-3">Control</th>
-                <th className="pb-3">Category</th>
-                <th className="pb-3">Requirement</th>
-                <th className="pb-3">Owner</th>
-                <th className="pb-3">Status</th>
-                <th className="pb-3">Action</th>
+                <th className="pb-3">
+                  Control
+                </th>
+
+                <th className="pb-3">
+                  Area
+                </th>
+
+                <th className="pb-3">
+                  Requirement
+                </th>
+
+                <th className="pb-3">
+                  Merchant
+                </th>
+
+                <th className="pb-3">
+                  Due Date
+                </th>
+
+                <th className="pb-3">
+                  Status
+                </th>
+
+                <th className="pb-3">
+                  Action
+                </th>
               </tr>
             </thead>
 
             <tbody>
               {filteredItems.map((item) => (
-                <tr key={item.id} className="border-b last:border-0">
-                  <td className="py-4 font-medium">{item.id}</td>
-                  <td>{item.category}</td>
+                <tr
+                  key={item.id}
+                  className="border-b last:border-0"
+                >
+                  <td className="py-4 font-medium">
+                    {item.id}
+                  </td>
+
+                  <td>{item.area}</td>
+
                   <td>{item.requirement}</td>
-                  <td>{item.owner}</td>
-                  <td>{item.status}</td>
+
+                  <td>{item.merchant}</td>
+
+                  <td>{item.dueDate}</td>
+
                   <td>
-                    {item.status !== "Compliant" && (
+                    {item.status ===
+                      "Compliant" && (
+                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                        Compliant
+                      </span>
+                    )}
+
+                    {item.status ===
+                      "Under Review" && (
+                      <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                        Under Review
+                      </span>
+                    )}
+
+                    {item.status ===
+                      "Action Required" && (
+                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                        Action Required
+                      </span>
+                    )}
+                  </td>
+
+                  <td>
+                    {item.status ===
+                      "Action Required" && (
                       <button
-                        onClick={() => resolveItem(item.id)}
-                        className="rounded-lg bg-slate-900 px-3 py-2 text-sm text-white hover:bg-slate-700"
+                        onClick={() =>
+                          handleReview(item.id)
+                        }
+                        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
                       >
-                        Mark Compliant
+                        Review
                       </button>
+                    )}
+
+                    {item.status ===
+                      "Under Review" && (
+                      <button
+                        onClick={() =>
+                          handleResolve(item.id)
+                        }
+                        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                      >
+                        Resolve
+                      </button>
+                    )}
+
+                    {item.status ===
+                      "Compliant" && (
+                      <span className="text-sm text-gray-400">
+                        Completed
+                      </span>
                     )}
                   </td>
                 </tr>
