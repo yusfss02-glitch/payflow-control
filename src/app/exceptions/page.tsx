@@ -1,151 +1,71 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Layout from "@/components/Layout";
 
-type ExceptionStatus = "Open" | "Under Review" | "Resolved";
-
-type Exception = {
-  id: string;
-  transaction: string;
-  merchant: string;
-  type: string;
-  priority: string;
-  status: ExceptionStatus;
-};
-
-const initialExceptions: Exception[] = [
+const exceptions = [
   {
     id: "EXC001",
     transaction: "TXN003",
     merchant: "Hotel C",
-    type: "Settlement Mismatch",
-    priority: "High",
+    type: "Settlement Failure",
+    amount: "$2,430",
     status: "Open",
+    priority: "High",
   },
   {
     id: "EXC002",
     transaction: "TXN006",
     merchant: "Hotel F",
-    type: "Payment Failed",
+    type: "Payment Exception",
+    amount: "$560",
+    status: "Under Review",
     priority: "Medium",
-    status: "Open",
   },
   {
     id: "EXC003",
     transaction: "TXN002",
     merchant: "Hotel B",
-    type: "Settlement Delay",
-    priority: "Low",
+    type: "Reconciliation Difference",
+    amount: "$980",
     status: "Resolved",
+    priority: "Medium",
   },
 ];
 
 export default function ExceptionsPage() {
-  const [exceptions, setExceptions] =
-    useState<Exception[]>(initialExceptions);
-
-  const [filter, setFilter] = useState("All");
-
-  const handleResolve = (id: string) => {
-    setExceptions((current) =>
-      current.map((exception) =>
-        exception.id === id
-          ? {
-              ...exception,
-              status: "Resolved",
-            }
-          : exception
-      )
-    );
-  };
-
-  const handleReview = (id: string) => {
-    setExceptions((current) =>
-      current.map((exception) =>
-        exception.id === id
-          ? {
-              ...exception,
-              status: "Under Review",
-            }
-          : exception
-      )
-    );
-  };
+  const [status, setStatus] = useState("All");
 
   const filteredExceptions = exceptions.filter(
     (exception) =>
-      filter === "All" || exception.status === filter
+      status === "All" ||
+      exception.status === status
   );
-
-  const openCount = exceptions.filter(
-    (exception) => exception.status === "Open"
-  ).length;
-
-  const reviewCount = exceptions.filter(
-    (exception) => exception.status === "Under Review"
-  ).length;
-
-  const resolvedCount = exceptions.filter(
-    (exception) => exception.status === "Resolved"
-  ).length;
 
   return (
     <Layout>
       <div className="space-y-6">
+
         <div>
           <h2 className="text-3xl font-bold">
-            Exception Management
+            Exceptions
           </h2>
 
           <p className="mt-1 text-gray-500">
-            Monitor, review, and resolve payment exceptions.
+            Investigate and resolve payment operational exceptions.
           </p>
         </div>
 
-        {/* KPI CARDS */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">
-              Open
-            </p>
-
-            <p className="mt-2 text-3xl font-bold">
-              {openCount}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">
-              Under Review
-            </p>
-
-            <p className="mt-2 text-3xl font-bold">
-              {reviewCount}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">
-              Resolved
-            </p>
-
-            <p className="mt-2 text-3xl font-bold">
-              {resolvedCount}
-            </p>
-          </div>
-        </div>
-
-        {/* QUEUE HEADER */}
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold">
             Exception Queue
           </h3>
 
           <select
-            value={filter}
-            onChange={(event) =>
-              setFilter(event.target.value)
+            value={status}
+            onChange={(e) =>
+              setStatus(e.target.value)
             }
             className="rounded-lg border bg-white px-4 py-2"
           >
@@ -167,7 +87,6 @@ export default function ExceptionsPage() {
           </select>
         </div>
 
-        {/* TABLE */}
         <div className="rounded-xl bg-white p-6 shadow">
           <table className="w-full text-left">
             <thead>
@@ -189,15 +108,11 @@ export default function ExceptionsPage() {
                 </th>
 
                 <th className="pb-3">
-                  Priority
+                  Amount
                 </th>
 
                 <th className="pb-3">
                   Status
-                </th>
-
-                <th className="pb-3">
-                  Action
                 </th>
               </tr>
             </thead>
@@ -210,7 +125,12 @@ export default function ExceptionsPage() {
                     className="border-b last:border-0"
                   >
                     <td className="py-4 font-medium">
-                      {exception.id}
+                      <Link
+                        href={`/exceptions/${exception.id}`}
+                        className="text-blue-600 underline hover:text-blue-800"
+                      >
+                        {exception.id}
+                      </Link>
                     </td>
 
                     <td>
@@ -226,84 +146,25 @@ export default function ExceptionsPage() {
                     </td>
 
                     <td>
-                      {exception.priority ===
-                        "High" && (
-                        <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                          High
-                        </span>
-                      )}
-
-                      {exception.priority ===
-                        "Medium" && (
-                        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                          Medium
-                        </span>
-                      )}
-
-                      {exception.priority ===
-                        "Low" && (
-                        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-                          Low
-                        </span>
-                      )}
+                      {exception.amount}
                     </td>
 
                     <td>
-                      {exception.status ===
-                        "Open" && (
+                      {exception.status === "Open" && (
                         <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
                           Open
                         </span>
                       )}
 
-                      {exception.status ===
-                        "Under Review" && (
+                      {exception.status === "Under Review" && (
                         <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
                           Under Review
                         </span>
                       )}
 
-                      {exception.status ===
-                        "Resolved" && (
+                      {exception.status === "Resolved" && (
                         <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
                           Resolved
-                        </span>
-                      )}
-                    </td>
-
-                    <td>
-                      {exception.status ===
-                        "Open" && (
-                        <button
-                          onClick={() =>
-                            handleReview(
-                              exception.id
-                            )
-                          }
-                          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                        >
-                          Review
-                        </button>
-                      )}
-
-                      {exception.status ===
-                        "Under Review" && (
-                        <button
-                          onClick={() =>
-                            handleResolve(
-                              exception.id
-                            )
-                          }
-                          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                        >
-                          Resolve
-                        </button>
-                      )}
-
-                      {exception.status ===
-                        "Resolved" && (
-                        <span className="text-sm text-gray-400">
-                          Completed
                         </span>
                       )}
                     </td>
@@ -312,7 +173,14 @@ export default function ExceptionsPage() {
               )}
             </tbody>
           </table>
+
+          {filteredExceptions.length === 0 && (
+            <p className="py-8 text-center text-gray-500">
+              No exceptions found.
+            </p>
+          )}
         </div>
+
       </div>
     </Layout>
   );
