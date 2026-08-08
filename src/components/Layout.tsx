@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Layout({
   children,
 }: {
@@ -9,12 +11,29 @@ export default function Layout({
         <h2 className="text-2xl font-bold">PayFlow Control</h2>
 
         <nav className="mt-8 space-y-3">
-          <p>Dashboard</p>
-          <p>Transactions</p>
-          <p>Reconciliation</p>
-          <p>Exceptions</p>
-          <p>Risk Monitoring</p>
-          <p>Compliance</p>
+          <Link href="/dashboard" className="block hover:text-cyan-300">
+            Dashboard
+          </Link>
+
+          <Link href="/transactions" className="block hover:text-cyan-300">
+            Transactions
+          </Link>
+
+          <Link href="/reconciliation" className="block hover:text-cyan-300">
+            Reconciliation
+          </Link>
+
+          <Link href="/exceptions" className="block hover:text-cyan-300">
+            Exceptions
+          </Link>
+
+          <Link href="/risk" className="block hover:text-cyan-300">
+            Risk Monitoring
+          </Link>
+
+          <Link href="/compliance" className="block hover:text-cyan-300">
+            Compliance
+          </Link>
         </nav>
       </aside>
 
