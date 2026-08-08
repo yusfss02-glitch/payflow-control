@@ -1,198 +1,101 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Layout from "@/components/Layout";
 
-type ComplianceStatus =
-  | "Compliant"
-  | "Under Review"
-  | "Action Required";
-
-type ComplianceItem = {
-  id: string;
-  area: string;
-  requirement: string;
-  merchant: string;
-  status: ComplianceStatus;
-  dueDate: string;
-};
-
-const initialItems: ComplianceItem[] = [
+const complianceRecords = [
   {
     id: "CMP001",
-    area: "KYC",
-    requirement: "Merchant Verification",
-    merchant: "Hotel A",
-    status: "Compliant",
-    dueDate: "Aug 12, 2026",
+    transaction: "TXN003",
+    merchant: "Hotel C",
+    type: "Transaction Monitoring",
+    priority: "High",
+    status: "Pending Review",
   },
   {
     id: "CMP002",
-    area: "Transaction Monitoring",
-    requirement: "High-Risk Transaction Review",
-    merchant: "Hotel C",
-    status: "Action Required",
-    dueDate: "Aug 10, 2026",
+    transaction: "TXN006",
+    merchant: "Hotel F",
+    type: "Payment Monitoring",
+    priority: "Medium",
+    status: "Reviewing",
   },
   {
     id: "CMP003",
-    area: "AML",
-    requirement: "Suspicious Activity Review",
-    merchant: "Hotel F",
-    status: "Under Review",
-    dueDate: "Aug 14, 2026",
-  },
-  {
-    id: "CMP004",
-    area: "Settlement",
-    requirement: "Settlement Control Check",
-    merchant: "Hotel D",
-    status: "Compliant",
-    dueDate: "Aug 18, 2026",
+    transaction: "TXN002",
+    merchant: "Hotel B",
+    type: "Settlement Monitoring",
+    priority: "Medium",
+    status: "Approved",
   },
 ];
 
 export default function CompliancePage() {
-  const [items, setItems] =
-    useState<ComplianceItem[]>(initialItems);
+  const [status, setStatus] = useState("All");
 
-  const [filter, setFilter] = useState("All");
-
-  const handleReview = (id: string) => {
-    setItems((current) =>
-      current.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status: "Under Review",
-            }
-          : item
-      )
-    );
-  };
-
-  const handleResolve = (id: string) => {
-    setItems((current) =>
-      current.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              status: "Compliant",
-            }
-          : item
-      )
-    );
-  };
-
-  const filteredItems = items.filter(
-    (item) =>
-      filter === "All" || item.status === filter
+  const filteredRecords = complianceRecords.filter(
+    (record) =>
+      status === "All" || record.status === status
   );
-
-  const compliantCount = items.filter(
-    (item) => item.status === "Compliant"
-  ).length;
-
-  const reviewCount = items.filter(
-    (item) => item.status === "Under Review"
-  ).length;
-
-  const actionCount = items.filter(
-    (item) => item.status === "Action Required"
-  ).length;
 
   return (
     <Layout>
       <div className="space-y-6">
+
         <div>
           <h2 className="text-3xl font-bold">
             Compliance
           </h2>
 
           <p className="mt-1 text-gray-500">
-            Monitor compliance controls and required actions across payment operations.
+            Monitor compliance cases and review activities.
           </p>
         </div>
 
-        {/* KPI CARDS */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">
-              Compliant
-            </p>
-
-            <p className="mt-2 text-3xl font-bold">
-              {compliantCount}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">
-              Under Review
-            </p>
-
-            <p className="mt-2 text-3xl font-bold">
-              {reviewCount}
-            </p>
-          </div>
-
-          <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">
-              Action Required
-            </p>
-
-            <p className="mt-2 text-3xl font-bold">
-              {actionCount}
-            </p>
-          </div>
-        </div>
-
-        {/* QUEUE HEADER */}
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold">
-            Compliance Control Queue
+            Compliance Queue
           </h3>
 
           <select
-            value={filter}
-            onChange={(event) =>
-              setFilter(event.target.value)
-            }
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
             className="rounded-lg border bg-white px-4 py-2"
           >
             <option value="All">
               All Status
             </option>
 
-            <option value="Compliant">
-              Compliant
+            <option value="Pending Review">
+              Pending Review
             </option>
 
-            <option value="Under Review">
-              Under Review
+            <option value="Reviewing">
+              Reviewing
             </option>
 
-            <option value="Action Required">
-              Action Required
+            <option value="Approved">
+              Approved
+            </option>
+
+            <option value="Rejected">
+              Rejected
             </option>
           </select>
         </div>
 
-        {/* TABLE */}
         <div className="rounded-xl bg-white p-6 shadow">
           <table className="w-full text-left">
+
             <thead>
               <tr className="border-b">
                 <th className="pb-3">
-                  Control
+                  Compliance ID
                 </th>
 
                 <th className="pb-3">
-                  Area
-                </th>
-
-                <th className="pb-3">
-                  Requirement
+                  Transaction
                 </th>
 
                 <th className="pb-3">
@@ -200,97 +103,105 @@ export default function CompliancePage() {
                 </th>
 
                 <th className="pb-3">
-                  Due Date
+                  Type
+                </th>
+
+                <th className="pb-3">
+                  Priority
                 </th>
 
                 <th className="pb-3">
                   Status
                 </th>
-
-                <th className="pb-3">
-                  Action
-                </th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredItems.map((item) => (
+              {filteredRecords.map((record) => (
                 <tr
-                  key={item.id}
+                  key={record.id}
                   className="border-b last:border-0"
                 >
+
                   <td className="py-4 font-medium">
-                    {item.id}
+                    <Link
+                      href={`/compliance/${record.id}`}
+                      className="text-blue-600 underline hover:text-blue-800"
+                    >
+                      {record.id}
+                    </Link>
                   </td>
 
-                  <td>{item.area}</td>
-
-                  <td>{item.requirement}</td>
-
-                  <td>{item.merchant}</td>
-
-                  <td>{item.dueDate}</td>
+                  <td>
+                    <Link
+                      href={`/transactions/${record.transaction}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {record.transaction}
+                    </Link>
+                  </td>
 
                   <td>
-                    {item.status ===
-                      "Compliant" && (
-                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                        Compliant
-                      </span>
-                    )}
+                    {record.merchant}
+                  </td>
 
-                    {item.status ===
-                      "Under Review" && (
-                      <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                        Under Review
-                      </span>
-                    )}
+                  <td>
+                    {record.type}
+                  </td>
 
-                    {item.status ===
-                      "Action Required" && (
+                  <td>
+                    {record.priority === "High" && (
                       <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                        Action Required
+                        High
+                      </span>
+                    )}
+
+                    {record.priority === "Medium" && (
+                      <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                        Medium
                       </span>
                     )}
                   </td>
 
                   <td>
-                    {item.status ===
-                      "Action Required" && (
-                      <button
-                        onClick={() =>
-                          handleReview(item.id)
-                        }
-                        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                      >
-                        Review
-                      </button>
+                    {record.status === "Pending Review" && (
+                      <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                        Pending Review
+                      </span>
                     )}
 
-                    {item.status ===
-                      "Under Review" && (
-                      <button
-                        onClick={() =>
-                          handleResolve(item.id)
-                        }
-                        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                      >
-                        Resolve
-                      </button>
+                    {record.status === "Reviewing" && (
+                      <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                        Reviewing
+                      </span>
                     )}
 
-                    {item.status ===
-                      "Compliant" && (
-                      <span className="text-sm text-gray-400">
-                        Completed
+                    {record.status === "Approved" && (
+                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                        Approved
+                      </span>
+                    )}
+
+                    {record.status === "Rejected" && (
+                      <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                        Rejected
                       </span>
                     )}
                   </td>
+
                 </tr>
               ))}
             </tbody>
+
           </table>
+
+          {filteredRecords.length === 0 && (
+            <p className="py-8 text-center text-gray-500">
+              No compliance records found.
+            </p>
+          )}
         </div>
+
       </div>
     </Layout>
   );
