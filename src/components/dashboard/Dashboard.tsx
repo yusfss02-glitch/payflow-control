@@ -1,11 +1,15 @@
+"use client";
+
 import Link from "next/link";
+import Layout from "@/components/Layout";
+import { useWorkflow } from "@/components/WorkflowContext";
 
 const transactions = [
   {
     id: "TXN001",
     merchant: "Hotel A",
     amount: "$1,250",
-    status: "Completed",
+    status: "Success",
   },
   {
     id: "TXN002",
@@ -17,342 +21,563 @@ const transactions = [
     id: "TXN003",
     merchant: "Hotel C",
     amount: "$2,430",
-    status: "Failed",
+    status: "Exception",
   },
   {
     id: "TXN004",
     merchant: "Hotel D",
     amount: "$750",
-    status: "Completed",
+    status: "Success",
   },
   {
     id: "TXN005",
     merchant: "Hotel E",
     amount: "$1,890",
-    status: "Completed",
+    status: "Success",
+  },
+  {
+    id: "TXN006",
+    merchant: "Hotel F",
+    amount: "$560",
+    status: "Exception",
+  },
+];
+
+const riskRecords = [
+  {
+    id: "RISK001",
+    level: "High",
+    status: "Detected",
+  },
+  {
+    id: "RISK002",
+    level: "Medium",
+    status: "Detected",
+  },
+  {
+    id: "RISK003",
+    level: "Medium",
+    status: "Detected",
+  },
+];
+
+const exceptions = [
+  {
+    id: "EXC001",
+    transaction: "TXN003",
+    merchant: "Hotel C",
+    activity: "Settlement mismatch detected",
+    status: "Open",
+  },
+  {
+    id: "EXC002",
+    transaction: "TXN006",
+    merchant: "Hotel F",
+    activity: "Payment exception requires review",
+    status: "Under Review",
+  },
+  {
+    id: "EXC003",
+    transaction: "TXN002",
+    merchant: "Hotel B",
+    activity: "Payment verification completed",
+    status: "Resolved",
+  },
+  {
+    id: "EXC004",
+    transaction: "TXN001",
+    merchant: "Hotel A",
+    activity: "Operational exception detected",
+    status: "Open",
   },
 ];
 
 export default function Dashboard() {
+  const {
+    transactionStatuses,
+    riskStatuses,
+    exceptionStatuses,
+  } = useWorkflow();
+
+  const getTransactionStatus = (
+    transaction: (typeof transactions)[number]
+  ) =>
+    transactionStatuses[transaction.id] ||
+    transaction.status;
+
+  const getRiskStatus = (
+    risk: (typeof riskRecords)[number]
+  ) =>
+    riskStatuses[risk.id] ||
+    risk.status;
+
+  const getExceptionStatus = (
+    exception: (typeof exceptions)[number]
+  ) =>
+    exceptionStatuses[exception.id] ||
+    exception.status;
+
+  const totalTransactions = transactions.length;
+
+  const successfulTransactions =
+    transactions.filter(
+      (transaction) =>
+        getTransactionStatus(transaction) === "Success"
+    ).length;
+
+  const settlementSuccess =
+    totalTransactions === 0
+      ? 0
+      : (
+          (successfulTransactions /
+            totalTransactions) *
+          100
+        ).toFixed(1);
+
+  const openExceptions =
+    exceptions.filter((exception) => {
+      const currentStatus =
+        getExceptionStatus(exception);
+
+      return (
+        currentStatus === "Open" ||
+        currentStatus === "Under Review"
+      );
+    }).length;
+
+  const highRiskAlerts =
+    riskRecords.filter((risk) => {
+      const currentStatus =
+        getRiskStatus(risk);
+
+      return (
+        risk.level === "High" &&
+        currentStatus !== "Mitigated"
+      );
+    }).length;
+
+  /*
+   * Only active exceptions appear in Recent Activity.
+   * Once an exception becomes Resolved,
+   * its activity disappears from the active dashboard feed.
+   */
+  const recentActivities = exceptions.filter(
+    (exception) => {
+      const currentStatus =
+        getExceptionStatus(exception);
+
+      return currentStatus !== "Resolved";
+    }
+  );
+
   return (
-    <div className="space-y-6">
-      {/* PAGE HEADER */}
-      <div>
-        <h2 className="text-3xl font-bold text-slate-900">
-          Dashboard
-        </h2>
+    <Layout>
 
-        <p className="mt-1 text-gray-500">
-          Overview of payment operations, reconciliation,
-          exceptions and risk.
-        </p>
-      </div>
+      <div className="space-y-6">
 
-      {/* KPI CARDS */}
-      <div className="grid grid-cols-4 gap-4">
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-gray-500">
-            Transactions Today
-          </p>
+        {/* PAGE HEADER */}
 
-          <p className="mt-2 text-3xl font-bold text-slate-900">
-            12,458
-          </p>
+        <div>
+          <h2 className="text-3xl font-bold">
+            Dashboard
+          </h2>
 
-          <p className="mt-2 text-sm text-green-600">
-            +8.4% vs yesterday
+          <p className="mt-1 text-gray-500">
+            Payment operations overview and monitoring.
           </p>
         </div>
 
-        <div className="rounded-xl bg-white p-5 shadow-sm">
-          <p className="text-sm text-gray-500">
-            Settlement Success
-          </p>
+        {/* KPI CARDS */}
 
-          <p className="mt-2 text-3xl font-bold text-slate-900">
-            98.7%
-          </p>
+        <div className="grid grid-cols-4 gap-4">
 
-          <p className="mt-2 text-sm text-green-600">
-            Above target
-          </p>
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-gray-500">
+              Transactions Today
+            </p>
+
+            <h3 className="mt-2 text-3xl font-bold">
+              {totalTransactions}
+            </h3>
+          </div>
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-gray-500">
+              Settlement Success
+            </p>
+
+            <h3 className="mt-2 text-3xl font-bold">
+              {settlementSuccess}%
+            </h3>
+          </div>
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-gray-500">
+              Open Exceptions
+            </p>
+
+            <h3 className="mt-2 text-3xl font-bold">
+              {openExceptions}
+            </h3>
+          </div>
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-gray-500">
+              High Risk Alerts
+            </p>
+
+            <h3 className="mt-2 text-3xl font-bold">
+              {highRiskAlerts}
+            </h3>
+          </div>
+
         </div>
 
-        <Link
-          href="/exceptions"
-          className="rounded-xl bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-        >
-          <p className="text-sm text-gray-500">
-            Open Exceptions
-          </p>
+        {/* RECENT ACTIVITY */}
 
-          <p className="mt-2 text-3xl font-bold text-slate-900">
-            2
-          </p>
+        <div className="rounded-xl bg-white p-6 shadow">
 
-          <p className="mt-2 text-sm text-red-600">
-            Requires attention
-          </p>
-        </Link>
+          <div className="flex items-center justify-between">
 
-        <Link
-          href="/risk"
-          className="rounded-xl bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-        >
-          <p className="text-sm text-gray-500">
-            High Risk Alerts
-          </p>
-
-          <p className="mt-2 text-3xl font-bold text-slate-900">
-            2
-          </p>
-
-          <p className="mt-2 text-sm text-red-600">
-            Review required
-          </p>
-        </Link>
-      </div>
-
-      {/* MAIN GRID */}
-      <div className="grid grid-cols-3 gap-6">
-        {/* RECENT TRANSACTIONS */}
-        <div className="col-span-2 rounded-xl bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-slate-900">
+              <h3 className="text-lg font-semibold">
+                Recent Activity
+              </h3>
+
+              <p className="mt-1 text-sm text-gray-500">
+                Active payment operations requiring attention.
+              </p>
+            </div>
+
+            <Link
+              href="/exceptions"
+              className="text-sm font-medium text-blue-600 hover:underline"
+            >
+              View Exceptions
+            </Link>
+
+          </div>
+
+          <div className="mt-5 space-y-3">
+
+            {recentActivities.length === 0 && (
+              <div className="rounded-lg border border-dashed p-6 text-center">
+
+                <p className="font-medium text-gray-700">
+                  No active exceptions
+                </p>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  All current operational exceptions have been resolved.
+                </p>
+
+              </div>
+            )}
+
+            {recentActivities.map((exception) => {
+
+              const currentStatus =
+                getExceptionStatus(exception);
+
+              return (
+                <Link
+                  key={exception.id}
+                  href={`/exceptions/${exception.id}`}
+                  className="block rounded-lg border p-4 transition hover:bg-gray-50"
+                >
+
+                  <div className="flex items-center justify-between">
+
+                    <div>
+
+                      <p className="font-medium text-blue-600">
+                        {exception.activity}
+                      </p>
+
+                      <p className="mt-1 text-sm text-gray-500">
+                        {exception.transaction} ·{" "}
+                        {exception.merchant}
+                      </p>
+
+                    </div>
+
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        currentStatus === "Under Review"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {currentStatus}
+                    </span>
+
+                  </div>
+
+                </Link>
+              );
+            })}
+
+          </div>
+
+        </div>
+
+        {/* RECENT TRANSACTIONS */}
+
+        <div className="rounded-xl bg-white p-6 shadow">
+
+          <div className="flex items-center justify-between">
+
+            <div>
+              <h3 className="text-lg font-semibold">
                 Recent Transactions
               </h3>
 
-              <p className="text-sm text-gray-500">
-                Latest payment activity
+              <p className="mt-1 text-sm text-gray-500">
+                Latest payment activity across merchants.
               </p>
             </div>
 
             <Link
               href="/transactions"
-              className="text-sm font-medium text-slate-700 hover:text-slate-950"
+              className="text-sm font-medium text-blue-600 hover:underline"
             >
-              View all →
+              View All
             </Link>
+
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="mt-5 overflow-x-auto">
+
             <table className="w-full text-left">
+
               <thead>
-                <tr className="border-b text-sm text-gray-500">
-                  <th className="pb-3">Transaction</th>
-                  <th className="pb-3">Merchant</th>
-                  <th className="pb-3">Amount</th>
-                  <th className="pb-3">Status</th>
+                <tr className="border-b">
+
+                  <th className="pb-3">
+                    Transaction
+                  </th>
+
+                  <th className="pb-3">
+                    Merchant
+                  </th>
+
+                  <th className="pb-3">
+                    Amount
+                  </th>
+
+                  <th className="pb-3">
+                    Status
+                  </th>
+
                 </tr>
               </thead>
 
               <tbody>
-                {transactions.map((transaction) => (
-                  <tr
-                    key={transaction.id}
-                    className="border-b last:border-0"
-                  >
-                    <td className="py-4 font-medium">
-                      {transaction.id}
-                    </td>
 
-                    <td>{transaction.merchant}</td>
+                {transactions
+                  .slice(0, 5)
+                  .map((transaction) => {
 
-                    <td>{transaction.amount}</td>
+                    const currentStatus =
+                      getTransactionStatus(
+                        transaction
+                      );
 
-                    <td>
-                      {transaction.status ===
-                        "Completed" && (
-                        <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                          Completed
-                        </span>
-                      )}
+                    return (
+                      <tr
+                        key={transaction.id}
+                        className="border-b last:border-0"
+                      >
 
-                      {transaction.status ===
-                        "Pending" && (
-                        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                          Pending
-                        </span>
-                      )}
+                        <td className="py-4 font-medium">
 
-                      {transaction.status ===
-                        "Failed" && (
-                        <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                          Failed
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                          <Link
+                            href={`/transactions/${transaction.id}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            {transaction.id}
+                          </Link>
+
+                        </td>
+
+                        <td>
+                          {transaction.merchant}
+                        </td>
+
+                        <td>
+                          {transaction.amount}
+                        </td>
+
+                        <td>
+
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                              currentStatus === "Success"
+                                ? "bg-green-100 text-green-700"
+                                : currentStatus === "Pending"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {currentStatus}
+                          </span>
+
+                        </td>
+
+                      </tr>
+                    );
+                  })}
+
               </tbody>
+
             </table>
+
           </div>
+
         </div>
 
-        {/* OPERATIONAL SUMMARY */}
-        <div className="space-y-6">
-          <div className="rounded-xl bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-slate-900">
-                  Exceptions
-                </h3>
+        {/* OPERATIONAL OVERVIEW */}
 
-                <p className="mt-1 text-sm text-gray-500">
-                  Items requiring attention
-                </p>
-              </div>
+        <div className="grid grid-cols-2 gap-6">
+
+          {/* EXCEPTIONS */}
+
+          <div className="rounded-xl bg-white p-6 shadow">
+
+            <div className="flex items-center justify-between">
+
+              <h3 className="text-lg font-semibold">
+                Exceptions
+              </h3>
 
               <Link
                 href="/exceptions"
-                className="text-sm font-medium text-slate-700"
+                className="text-sm text-blue-600 hover:underline"
               >
-                View →
+                View All
               </Link>
+
             </div>
 
-            <div className="mt-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">
-                  Open
-                </span>
+            <div className="mt-5 space-y-3">
 
-                <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                  2
-                </span>
-              </div>
+              {exceptions.map((exception) => {
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm">
-                  Under Review
-                </span>
+                const currentStatus =
+                  getExceptionStatus(
+                    exception
+                  );
 
-                <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                  0
-                </span>
-              </div>
+                return (
+                  <div
+                    key={exception.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm">
-                  Resolved
-                </span>
+                    <Link
+                      href={`/exceptions/${exception.id}`}
+                      className="font-medium text-blue-600 hover:underline"
+                    >
+                      {exception.id}
+                    </Link>
 
-                <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                  1
-                </span>
-              </div>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        currentStatus === "Resolved"
+                          ? "bg-green-100 text-green-700"
+                          : currentStatus === "Under Review"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {currentStatus}
+                    </span>
+
+                  </div>
+                );
+              })}
+
             </div>
+
           </div>
 
-          <div className="rounded-xl bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-slate-900">
-                  Risk Alerts
-                </h3>
+          {/* RISK MONITORING */}
 
-                <p className="mt-1 text-sm text-gray-500">
-                  Current risk exposure
-                </p>
-              </div>
+          <div className="rounded-xl bg-white p-6 shadow">
+
+            <div className="flex items-center justify-between">
+
+              <h3 className="text-lg font-semibold">
+                Risk Monitoring
+              </h3>
 
               <Link
                 href="/risk"
-                className="text-sm font-medium text-slate-700"
+                className="text-sm text-blue-600 hover:underline"
               >
-                View →
+                View All
               </Link>
+
             </div>
 
-            <div className="mt-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">
-                  High Risk
-                </span>
+            <div className="mt-5 space-y-3">
 
-                <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                  2
-                </span>
-              </div>
+              {riskRecords.map((risk) => {
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm">
-                  Medium Risk
-                </span>
+                const currentStatus =
+                  getRiskStatus(risk);
 
-                <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                  1
-                </span>
-              </div>
+                return (
+                  <div
+                    key={risk.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm">
-                  Low Risk
-                </span>
+                    <Link
+                      href={`/risk/${risk.id}`}
+                      className="font-medium text-blue-600 hover:underline"
+                    >
+                      {risk.id}
+                    </Link>
 
-                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-                  1
-                </span>
-              </div>
+                    <div className="flex items-center gap-3">
+
+                      <span
+                        className={`text-sm font-semibold ${
+                          risk.level === "High"
+                            ? "text-red-600"
+                            : "text-yellow-600"
+                        }`}
+                      >
+                        {risk.level}
+                      </span>
+
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          currentStatus === "Mitigated"
+                            ? "bg-green-100 text-green-700"
+                            : currentStatus === "Reviewing"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {currentStatus}
+                      </span>
+
+                    </div>
+
+                  </div>
+                );
+              })}
+
             </div>
+
           </div>
+
         </div>
+
       </div>
 
-      {/* RECONCILIATION SUMMARY */}
-      <div className="rounded-xl bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900">
-              Reconciliation Health
-            </h3>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Current payment matching status
-            </p>
-          </div>
-
-          <Link
-            href="/reconciliation"
-            className="text-sm font-medium text-slate-700 hover:text-slate-950"
-          >
-            Open reconciliation →
-          </Link>
-        </div>
-
-        <div className="mt-6 grid grid-cols-3 gap-6">
-          <div>
-            <p className="text-sm text-gray-500">
-              Matched
-            </p>
-
-            <p className="mt-1 text-2xl font-bold">
-              2
-            </p>
-          </div>
-
-          <div>
-            <p className="text-sm text-gray-500">
-              Unmatched
-            </p>
-
-            <p className="mt-1 text-2xl font-bold text-red-600">
-              2
-            </p>
-          </div>
-
-          <div>
-            <p className="text-sm text-gray-500">
-              Under Review
-            </p>
-
-            <p className="mt-1 text-2xl font-bold text-yellow-600">
-              1
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    </Layout>
   );
 }

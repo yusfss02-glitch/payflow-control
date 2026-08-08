@@ -42,8 +42,7 @@ export default function RiskDetailPage({
 }) {
   const { id } = use(params);
 
-  const risk =
-    riskData[id as keyof typeof riskData];
+  const risk = riskData[id as keyof typeof riskData];
 
   const {
     riskStatuses,
@@ -53,37 +52,36 @@ export default function RiskDetailPage({
   if (!risk) {
     return (
       <Layout>
-        <div className="rounded-xl bg-white p-8 shadow">
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">
+              Risk Alert Not Found
+            </h2>
 
-          <h2 className="text-2xl font-bold">
-            Risk Alert Not Found
-          </h2>
+            <p className="mt-2 text-gray-500">
+              The requested risk alert does not exist.
+            </p>
 
-          <p className="mt-2 text-gray-500">
-            The requested risk alert does not exist.
-          </p>
-
-          <Link
-            href="/risk"
-            className="mt-6 inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
-          >
-            Back to Risk Monitoring
-          </Link>
-
+            <Link
+              href="/risk"
+              className="mt-6 inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
+            >
+              Back to Risk Monitoring
+            </Link>
+          </div>
         </div>
       </Layout>
     );
   }
 
-  const status =
-    riskStatuses[risk.id] || "Open";
+  const status = riskStatuses[risk.id] || "Open";
 
   return (
     <Layout>
       <div className="space-y-6">
 
+        {/* HEADER */}
         <div>
-
           <Link
             href="/risk"
             className="text-sm text-gray-500 hover:text-slate-900"
@@ -92,7 +90,6 @@ export default function RiskDetailPage({
           </Link>
 
           <div className="mt-3 flex items-center justify-between">
-
             <div>
               <h2 className="text-3xl font-bold">
                 {risk.id}
@@ -114,13 +111,11 @@ export default function RiskDetailPage({
             >
               {status}
             </span>
-
           </div>
-
         </div>
 
+        {/* WORKFLOW */}
         <div className="rounded-xl bg-white p-6 shadow">
-
           <h3 className="text-lg font-semibold">
             Risk Workflow
           </h3>
@@ -129,12 +124,9 @@ export default function RiskDetailPage({
 
             <button
               onClick={() =>
-                updateRiskStatus(
-                  risk.id,
-                  "Open"
-                )
+                updateRiskStatus(risk.id, "Open")
               }
-              className={`rounded-lg border p-4 text-left ${
+              className={`rounded-lg border p-4 text-left transition ${
                 status === "Open"
                   ? "border-red-400 bg-red-50"
                   : "hover:bg-gray-50"
@@ -156,7 +148,7 @@ export default function RiskDetailPage({
                   "Under Review"
                 )
               }
-              className={`rounded-lg border p-4 text-left ${
+              className={`rounded-lg border p-4 text-left transition ${
                 status === "Under Review"
                   ? "border-yellow-400 bg-yellow-50"
                   : "hover:bg-gray-50"
@@ -178,7 +170,7 @@ export default function RiskDetailPage({
                   "Resolved"
                 )
               }
-              className={`rounded-lg border p-4 text-left ${
+              className={`rounded-lg border p-4 text-left transition ${
                 status === "Resolved"
                   ? "border-green-400 bg-green-50"
                   : "hover:bg-gray-50"
@@ -194,9 +186,9 @@ export default function RiskDetailPage({
             </button>
 
           </div>
-
         </div>
 
+        {/* RISK SUMMARY */}
         <div className="grid grid-cols-3 gap-4">
 
           <div className="rounded-xl bg-white p-5 shadow">
@@ -237,6 +229,7 @@ export default function RiskDetailPage({
 
         </div>
 
+        {/* DETAILS */}
         <div className="rounded-xl bg-white p-6 shadow">
 
           <h3 className="text-lg font-semibold">
@@ -299,7 +292,6 @@ export default function RiskDetailPage({
             </div>
 
           </div>
-
         </div>
 
       </div>

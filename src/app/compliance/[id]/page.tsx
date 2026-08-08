@@ -63,45 +63,48 @@ export default function ComplianceDetail({
   if (!record) {
     return (
       <Layout>
-        <div className="rounded-xl bg-white p-8 shadow">
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">
+              Compliance Record Not Found
+            </h2>
 
-          <h2 className="text-2xl font-bold">
-            Compliance Record Not Found
-          </h2>
+            <p className="mt-2 text-gray-500">
+              The requested compliance record does not exist.
+            </p>
 
-          <p className="mt-2 text-gray-500">
-            The requested compliance record does not exist.
-          </p>
-
-          <Link
-            href="/compliance"
-            className="mt-6 inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
-          >
-            Back to Compliance
-          </Link>
-
+            <Link
+              href="/compliance"
+              className="mt-6 inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
+            >
+              Back to Compliance
+            </Link>
+          </div>
         </div>
       </Layout>
     );
   }
 
+  /*
+   * Default status:
+   * CMP002 is already Approved.
+   * All other records start as Pending Review.
+   *
+   * Once a status is changed through the workflow,
+   * WorkflowContext becomes the source of truth.
+   */
   const currentStatus =
     complianceStatuses[record.id] ||
-    (
-      record.id === "CMP002"
-        ? "Approved"
-        : record.id === "CMP004"
-        ? "Rejected"
-        : "Pending Review"
-    );
+    (record.id === "CMP002"
+      ? "Approved"
+      : "Pending Review");
 
   return (
     <Layout>
-
       <div className="space-y-6">
 
+        {/* HEADER */}
         <div>
-
           <Link
             href="/compliance"
             className="text-sm text-gray-500 hover:text-slate-900"
@@ -112,7 +115,6 @@ export default function ComplianceDetail({
           <div className="mt-3 flex items-center justify-between">
 
             <div>
-
               <h2 className="text-3xl font-bold">
                 {record.id}
               </h2>
@@ -120,7 +122,6 @@ export default function ComplianceDetail({
               <p className="mt-1 text-gray-500">
                 Compliance review and decision workflow.
               </p>
-
             </div>
 
             <span
@@ -136,11 +137,9 @@ export default function ComplianceDetail({
             </span>
 
           </div>
-
         </div>
 
         {/* WORKFLOW */}
-
         <div className="rounded-xl bg-white p-6 shadow">
 
           <h3 className="text-lg font-semibold">
@@ -200,15 +199,12 @@ export default function ComplianceDetail({
             )}
 
           </div>
-
         </div>
 
         {/* SUMMARY */}
-
         <div className="grid grid-cols-3 gap-4">
 
           <div className="rounded-xl bg-white p-5 shadow">
-
             <p className="text-sm text-gray-500">
               Merchant
             </p>
@@ -216,11 +212,9 @@ export default function ComplianceDetail({
             <p className="mt-2 text-lg font-semibold">
               {record.merchant}
             </p>
-
           </div>
 
           <div className="rounded-xl bg-white p-5 shadow">
-
             <p className="text-sm text-gray-500">
               Requirement
             </p>
@@ -228,11 +222,9 @@ export default function ComplianceDetail({
             <p className="mt-2 text-lg font-semibold">
               {record.requirement}
             </p>
-
           </div>
 
           <div className="rounded-xl bg-white p-5 shadow">
-
             <p className="text-sm text-gray-500">
               Risk
             </p>
@@ -248,13 +240,11 @@ export default function ComplianceDetail({
             >
               {record.risk}
             </p>
-
           </div>
 
         </div>
 
         {/* DETAILS */}
-
         <div className="rounded-xl bg-white p-6 shadow">
 
           <h3 className="text-lg font-semibold">
@@ -264,7 +254,6 @@ export default function ComplianceDetail({
           <div className="mt-6 grid grid-cols-2 gap-6">
 
             <div>
-
               <p className="text-sm text-gray-500">
                 Compliance ID
               </p>
@@ -272,11 +261,9 @@ export default function ComplianceDetail({
               <p className="mt-1 font-medium">
                 {record.id}
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-gray-500">
                 Merchant
               </p>
@@ -284,11 +271,9 @@ export default function ComplianceDetail({
               <p className="mt-1 font-medium">
                 {record.merchant}
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-gray-500">
                 Requirement
               </p>
@@ -296,11 +281,9 @@ export default function ComplianceDetail({
               <p className="mt-1 font-medium">
                 {record.requirement}
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-gray-500">
                 Current Status
               </p>
@@ -308,7 +291,6 @@ export default function ComplianceDetail({
               <p className="mt-1 font-medium">
                 {currentStatus}
               </p>
-
             </div>
 
           </div>
@@ -328,7 +310,6 @@ export default function ComplianceDetail({
         </div>
 
       </div>
-
     </Layout>
   );
 }
