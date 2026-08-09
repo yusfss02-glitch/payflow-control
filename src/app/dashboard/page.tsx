@@ -4,30 +4,92 @@ import Link from "next/link";
 import Layout from "@/components/Layout";
 import { useWorkflow } from "@/components/WorkflowContext";
 
-const kpis = [
+const transactions = [
   {
-    title: "Transactions Today",
-    value: "12,458",
-    description: "Payment transactions processed",
-    href: "/transactions",
+    id: "TXN001",
+    merchant: "Hotel A",
+    amount: "$1,250",
   },
   {
-    title: "Settlement Success",
-    value: "98.7%",
-    description: "Successfully reconciled",
-    href: "/reconciliation",
+    id: "TXN002",
+    merchant: "Hotel B",
+    amount: "$980",
   },
   {
-    title: "Open Exceptions",
-    value: "24",
-    description: "Exceptions requiring attention",
-    href: "/exceptions",
+    id: "TXN003",
+    merchant: "Hotel C",
+    amount: "$2,430",
   },
   {
-    title: "High Risk Alerts",
-    value: "7",
-    description: "Potential risk indicators",
-    href: "/risk",
+    id: "TXN004",
+    merchant: "Hotel D",
+    amount: "$750",
+  },
+  {
+    id: "TXN005",
+    merchant: "Hotel E",
+    amount: "$1,890",
+  },
+  {
+    id: "TXN006",
+    merchant: "Hotel F",
+    amount: "$560",
+  },
+];
+
+const reconciliationRecords = [
+  {
+    id: "REC001",
+    transaction: "TXN001",
+  },
+  {
+    id: "REC002",
+    transaction: "TXN002",
+  },
+  {
+    id: "REC003",
+    transaction: "TXN003",
+  },
+  {
+    id: "REC004",
+    transaction: "TXN004",
+  },
+  {
+    id: "REC005",
+    transaction: "TXN005",
+  },
+];
+
+const exceptionRecords = [
+  {
+    id: "EXC001",
+    transaction: "TXN003",
+  },
+  {
+    id: "EXC002",
+    transaction: "TXN002",
+  },
+  {
+    id: "EXC003",
+    transaction: "TXN004",
+  },
+];
+
+const riskRecords = [
+  {
+    id: "RISK001",
+    transaction: "TXN003",
+    level: "High",
+  },
+  {
+    id: "RISK002",
+    transaction: "TXN006",
+    level: "Medium",
+  },
+  {
+    id: "RISK003",
+    transaction: "TXN002",
+    level: "Medium",
   },
 ];
 
@@ -70,40 +132,98 @@ export default function DashboardPage() {
     riskStatuses,
   } = useWorkflow();
 
-  const visibleActivities = activities.filter((activity) => {
-    if (activity.type === "exception") {
+  /*
+   * RECONCILIATION KPI
+   */
+
+  const matchedReconciliations =
+    reconciliationRecords.filter(
+      (record) =>
+        (reconciliationStatuses[record.id] ||
+          "Unmatched") === "Matched"
+    ).length;
+
+  const settlementSuccess =
+    reconciliationRecords.length === 0
+      ? "0.0"
+      : (
+          (matchedReconciliations /
+            reconciliationRecords.length) *
+          100
+        ).toFixed(1);
+
+  /*
+   * EXCEPTION KPI
+   */
+
+  const openExceptions =
+    exceptionRecords.filter((record) => {
       const status =
-        exceptionStatuses[activity.id] || "Open";
+        exceptionStatuses[record.id] ||
+        "Open";
 
       return status !== "Resolved";
-    }
+    }).length;
 
-    if (activity.type === "risk") {
+  /*
+   * HIGH RISK KPI
+   */
+
+  const highRiskAlerts =
+    riskRecords.filter((record) => {
       const status =
-        riskStatuses[activity.id] || "Open";
-
-      return status !== "Resolved";
-    }
-
-    if (activity.type === "compliance") {
-      const status =
-        complianceStatuses[activity.id] || "Pending Review";
+        riskStatuses[record.id] ||
+        "Open";
 
       return (
-        status !== "Approved" &&
-        status !== "Rejected"
+        record.level === "High" &&
+        status !== "Resolved"
       );
-    }
+    }).length;
 
-    if (activity.type === "reconciliation") {
-      const status =
-        reconciliationStatuses[activity.id] || "Unmatched";
+  /*
+   * RECENT ACTIVITY
+   */
 
-      return status !== "Matched";
-    }
+  const visibleActivities =
+    activities.filter((activity) => {
+      if (activity.type === "exception") {
+        const status =
+          exceptionStatuses[activity.id] ||
+          "Open";
 
-    return true;
-  });
+        return status !== "Resolved";
+      }
+
+      if (activity.type === "risk") {
+        const status =
+          riskStatuses[activity.id] ||
+          "Open";
+
+        return status !== "Resolved";
+      }
+
+      if (activity.type === "compliance") {
+        const status =
+          complianceStatuses[activity.id] ||
+          "Pending Review";
+
+        return (
+          status !== "Approved" &&
+          status !== "Rejected"
+        );
+      }
+
+      if (activity.type === "reconciliation") {
+        const status =
+          reconciliationStatuses[activity.id] ||
+          "Unmatched";
+
+        return status !== "Matched";
+      }
+
+      return true;
+    });
 
   return (
     <Layout>
@@ -125,31 +245,89 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-4 gap-4">
 
-          {kpis.map((kpi) => (
-            <Link
-              key={kpi.title}
-              href={kpi.href}
-              className="rounded-xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-md"
-            >
-              <p className="text-sm text-gray-500">
-                {kpi.title}
-              </p>
+          {/* TRANSACTIONS */}
 
-              <h3 className="mt-2 text-3xl font-bold">
-                {kpi.value}
-              </h3>
+          <Link
+            href="/transactions"
+            className="rounded-xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-md"
+          >
+            <p className="text-sm text-gray-500">
+              Transactions Today
+            </p>
 
-              <p className="mt-2 text-xs text-gray-400">
-                {kpi.description}
-              </p>
-            </Link>
-          ))}
+            <h3 className="mt-2 text-3xl font-bold">
+              {transactions.length}
+            </h3>
+
+            <p className="mt-2 text-xs text-gray-400">
+              Payment transactions processed
+            </p>
+          </Link>
+
+          {/* SETTLEMENT SUCCESS */}
+
+          <Link
+            href="/reconciliation"
+            className="rounded-xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-md"
+          >
+            <p className="text-sm text-gray-500">
+              Settlement Success
+            </p>
+
+            <h3 className="mt-2 text-3xl font-bold">
+              {settlementSuccess}%
+            </h3>
+
+            <p className="mt-2 text-xs text-gray-400">
+              Successfully reconciled
+            </p>
+          </Link>
+
+          {/* OPEN EXCEPTIONS */}
+
+          <Link
+            href="/exceptions"
+            className="rounded-xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-md"
+          >
+            <p className="text-sm text-gray-500">
+              Open Exceptions
+            </p>
+
+            <h3 className="mt-2 text-3xl font-bold">
+              {openExceptions}
+            </h3>
+
+            <p className="mt-2 text-xs text-gray-400">
+              Exceptions requiring attention
+            </p>
+          </Link>
+
+          {/* HIGH RISK ALERTS */}
+
+          <Link
+            href="/risk"
+            className="rounded-xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-md"
+          >
+            <p className="text-sm text-gray-500">
+              High Risk Alerts
+            </p>
+
+            <h3 className="mt-2 text-3xl font-bold">
+              {highRiskAlerts}
+            </h3>
+
+            <p className="mt-2 text-xs text-gray-400">
+              Potential risk indicators
+            </p>
+          </Link>
 
         </div>
 
-        {/* RECENT ACTIVITY */}
+        {/* RECENT ACTIVITY + OPERATIONAL HEALTH */}
 
         <div className="grid grid-cols-2 gap-6">
+
+          {/* RECENT ACTIVITY */}
 
           <div className="rounded-xl bg-white p-6 shadow">
 
@@ -170,6 +348,7 @@ export default function DashboardPage() {
               {visibleActivities.length === 0 ? (
 
                 <div className="rounded-lg border border-dashed p-6 text-center">
+
                   <p className="font-medium text-gray-600">
                     No active operational alerts
                   </p>
@@ -177,6 +356,7 @@ export default function DashboardPage() {
                   <p className="mt-1 text-sm text-gray-400">
                     All recent operational issues have been resolved.
                   </p>
+
                 </div>
 
               ) : (
@@ -216,7 +396,9 @@ export default function DashboardPage() {
               <div>
                 <div className="flex justify-between text-sm">
                   <span>Payment Processing</span>
-                  <span className="font-medium">99.2%</span>
+                  <span className="font-medium">
+                    99.2%
+                  </span>
                 </div>
 
                 <div className="mt-2 h-2 rounded-full bg-gray-200">
@@ -227,7 +409,9 @@ export default function DashboardPage() {
               <div>
                 <div className="flex justify-between text-sm">
                   <span>Reconciliation</span>
-                  <span className="font-medium">96.4%</span>
+                  <span className="font-medium">
+                    96.4%
+                  </span>
                 </div>
 
                 <div className="mt-2 h-2 rounded-full bg-gray-200">
@@ -238,7 +422,9 @@ export default function DashboardPage() {
               <div>
                 <div className="flex justify-between text-sm">
                   <span>Compliance Controls</span>
-                  <span className="font-medium">97.8%</span>
+                  <span className="font-medium">
+                    97.8%
+                  </span>
                 </div>
 
                 <div className="mt-2 h-2 rounded-full bg-gray-200">
@@ -249,7 +435,9 @@ export default function DashboardPage() {
               <div>
                 <div className="flex justify-between text-sm">
                   <span>Risk Monitoring</span>
-                  <span className="font-medium">94.6%</span>
+                  <span className="font-medium">
+                    94.6%
+                  </span>
                 </div>
 
                 <div className="mt-2 h-2 rounded-full bg-gray-200">
