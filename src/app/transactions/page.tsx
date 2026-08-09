@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Layout from "@/components/Layout";
 import { useWorkflow } from "@/components/WorkflowContext";
@@ -12,6 +12,7 @@ const transactions = [
     amount: "$1,250",
     status: "Success",
     method: "Card",
+    transactionDate: "April 1, 2026",
   },
   {
     id: "TXN002",
@@ -19,6 +20,7 @@ const transactions = [
     amount: "$980",
     status: "Pending",
     method: "Bank Transfer",
+    transactionDate: "April 2, 2026",
   },
   {
     id: "TXN003",
@@ -26,6 +28,7 @@ const transactions = [
     amount: "$2,430",
     status: "Exception",
     method: "Card",
+    transactionDate: "April 3, 2026",
   },
   {
     id: "TXN004",
@@ -33,6 +36,7 @@ const transactions = [
     amount: "$750",
     status: "Success",
     method: "QR Payment",
+    transactionDate: "April 4, 2026",
   },
   {
     id: "TXN005",
@@ -40,6 +44,7 @@ const transactions = [
     amount: "$1,890",
     status: "Success",
     method: "Card",
+    transactionDate: "April 5, 2026",
   },
   {
     id: "TXN006",
@@ -47,17 +52,18 @@ const transactions = [
     amount: "$560",
     status: "Exception",
     method: "Bank Transfer",
+    transactionDate: "April 6, 2026",
   },
 ];
 
 export default function TransactionsPage() {
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("All");
-
   const {
     transactionStatuses,
     updateTransactionStatus,
   } = useWorkflow();
+
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("All");
 
   const filteredTransactions = transactions.filter(
     (transaction) => {
@@ -85,6 +91,8 @@ export default function TransactionsPage() {
     <Layout>
       <div className="space-y-6">
 
+        {/* PAGE HEADER */}
+
         <div>
           <h2 className="text-3xl font-bold">
             Transactions
@@ -94,6 +102,8 @@ export default function TransactionsPage() {
             Monitor payment transactions across merchants.
           </p>
         </div>
+
+        {/* FILTERS */}
 
         <div className="flex gap-4">
 
@@ -129,9 +139,15 @@ export default function TransactionsPage() {
             <option value="Exception">
               Exception
             </option>
+
+            <option value="Resolved">
+              Resolved
+            </option>
           </select>
 
         </div>
+
+        {/* TRANSACTION TABLE */}
 
         <div className="rounded-xl bg-white p-6 shadow">
 
@@ -142,6 +158,10 @@ export default function TransactionsPage() {
 
                 <th className="pb-3">
                   Transaction ID
+                </th>
+
+                <th className="pb-3">
+                  Transaction Date
                 </th>
 
                 <th className="pb-3">
@@ -175,7 +195,8 @@ export default function TransactionsPage() {
                   const currentStatus =
                     transactionStatuses[
                       transaction.id
-                    ] || transaction.status;
+                    ] ||
+                    transaction.status;
 
                   return (
                     <tr
@@ -195,6 +216,10 @@ export default function TransactionsPage() {
                       </td>
 
                       <td>
+                        {transaction.transactionDate}
+                      </td>
+
+                      <td>
                         {transaction.merchant}
                       </td>
 
@@ -210,12 +235,12 @@ export default function TransactionsPage() {
 
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                            currentStatus ===
-                            "Success"
+                            currentStatus === "Success"
                               ? "bg-green-100 text-green-700"
-                              : currentStatus ===
-                                "Pending"
+                              : currentStatus === "Pending"
                               ? "bg-yellow-100 text-yellow-700"
+                              : currentStatus === "Resolved"
+                              ? "bg-green-100 text-green-700"
                               : "bg-red-100 text-red-700"
                           }`}
                         >
@@ -226,44 +251,22 @@ export default function TransactionsPage() {
 
                       <td className="text-right">
 
-                        {currentStatus ===
-                          "Pending" && (
+                        {currentStatus !== "Resolved" ? (
                           <button
                             onClick={() =>
                               updateTransactionStatus(
                                 transaction.id,
-                                "Success"
+                                "Resolved"
                               )
                             }
-                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                            className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-700"
                           >
-                            Approve
+                            Resolved
                           </button>
-                        )}
-
-                        {currentStatus ===
-                          "Exception" && (
-                          <button
-                            onClick={() =>
-                              updateTransactionStatus(
-                                transaction.id,
-                                "Success"
-                              )
-                            }
-                            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                          >
-                            Resolve
-                          </button>
-                        )}
-
-                        {currentStatus ===
-                          "Success" && (
-                          <button
-                            disabled
-                            className="cursor-not-allowed rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-500"
-                          >
-                            Completed
-                          </button>
+                        ) : (
+                          <span className="text-xs font-medium text-gray-400">
+                            Resolved
+                          </span>
                         )}
 
                       </td>
@@ -277,8 +280,7 @@ export default function TransactionsPage() {
 
           </table>
 
-          {filteredTransactions.length ===
-            0 && (
+          {filteredTransactions.length === 0 && (
             <p className="py-8 text-center text-gray-500">
               No transactions found.
             </p>

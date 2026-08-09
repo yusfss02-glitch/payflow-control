@@ -60,67 +60,62 @@ const reconciliationRecords = [
   },
 ];
 
-const exceptionRecords = [
+const exceptions = [
   {
     id: "EXC001",
-    transaction: "TXN003",
+    title: "Settlement mismatch detected",
+    detail: "TXN003 · Hotel C",
   },
   {
     id: "EXC002",
-    transaction: "TXN002",
+    title: "Payment exception detected",
+    detail: "TXN006 · Hotel F",
   },
   {
     id: "EXC003",
-    transaction: "TXN004",
+    title: "Settlement exception detected",
+    detail: "TXN002 · Hotel B",
   },
 ];
 
 const riskRecords = [
   {
     id: "RISK001",
-    transaction: "TXN003",
-    level: "High",
+    title: "High-risk transaction identified",
+    detail: "TXN003 · $2,430",
   },
   {
     id: "RISK002",
-    transaction: "TXN006",
-    level: "Medium",
+    title: "Unusual payment pattern",
+    detail: "TXN006 · $560",
   },
   {
     id: "RISK003",
-    transaction: "TXN002",
-    level: "Medium",
+    title: "Velocity alert",
+    detail: "TXN002 · $980",
   },
 ];
 
-const activities = [
+const complianceRecords = [
   {
-    id: "EXC001",
-    title: "Settlement mismatch detected",
-    detail: "TXN003 · Hotel C",
-    href: "/exceptions/EXC001",
-    type: "exception",
+    id: "CMP001",
+    title: "Compliance review pending",
+    detail: "CMP001 · KYC Verification",
   },
   {
-    id: "RISK001",
-    title: "High-risk transaction identified",
-    detail: "TXN003 · $2,430",
-    href: "/risk/RISK001",
-    type: "risk",
+    id: "CMP002",
+    title: "Compliance control approved",
+    detail: "CMP002 · Business Verification",
+  },
+  {
+    id: "CMP003",
+    title: "Compliance review pending",
+    detail: "CMP003 · Transaction Monitoring",
   },
   {
     id: "CMP004",
     title: "Compliance review pending",
     detail: "CMP004 · Audit Trail",
-    href: "/compliance/CMP004",
-    type: "compliance",
-  },
-  {
-    id: "REC005",
-    title: "Unmatched transaction",
-    detail: "TXN005 · Hotel E",
-    href: "/reconciliation/REC005",
-    type: "reconciliation",
   },
 ];
 
@@ -128,102 +123,183 @@ export default function DashboardPage() {
   const {
     reconciliationStatuses,
     exceptionStatuses,
-    complianceStatuses,
     riskStatuses,
+    complianceStatuses,
   } = useWorkflow();
 
+  const getReconciliationStatus = (
+    reconciliationId: string
+  ) => {
+    return (
+      reconciliationStatuses[
+        reconciliationId
+      ] || "Unmatched"
+    );
+  };
+
+  const getExceptionStatus = (
+    exceptionId: string
+  ) => {
+    return (
+      exceptionStatuses[exceptionId] ||
+      "Open"
+    );
+  };
+
+  const getRiskStatus = (
+    riskId: string
+  ) => {
+    return (
+      riskStatuses[riskId] ||
+      "Open"
+    );
+  };
+
+  const getComplianceStatus = (
+    complianceId: string
+  ) => {
+    const defaultStatuses: Record<
+      string,
+      string
+    > = {
+      CMP001: "Pending Review",
+      CMP002: "Approved",
+      CMP003: "Pending Review",
+      CMP004: "Rejected",
+    };
+
+    return (
+      complianceStatuses[complianceId] ||
+      defaultStatuses[complianceId] ||
+      "Pending Review"
+    );
+  };
+
   /*
-   * RECONCILIATION KPI
+   * SETTLEMENT SUCCESS
+   *
+   * There are 5 reconciliation records.
+   * Matched records represent successful settlement.
    */
+
+  const totalReconciliations =
+    reconciliationRecords.length;
 
   const matchedReconciliations =
     reconciliationRecords.filter(
       (record) =>
-        (reconciliationStatuses[record.id] ||
-          "Unmatched") === "Matched"
+        getReconciliationStatus(
+          record.id
+        ) === "Matched"
     ).length;
 
   const settlementSuccess =
-    reconciliationRecords.length === 0
+    totalReconciliations === 0
       ? "0.0"
       : (
           (matchedReconciliations /
-            reconciliationRecords.length) *
+            totalReconciliations) *
           100
         ).toFixed(1);
 
   /*
-   * EXCEPTION KPI
+   * OPEN EXCEPTIONS
    */
 
   const openExceptions =
-    exceptionRecords.filter((record) => {
+    exceptions.filter((exception) => {
       const status =
-        exceptionStatuses[record.id] ||
-        "Open";
+        getExceptionStatus(exception.id);
+
+      return (
+        status === "Open" ||
+        status === "Under Review"
+      );
+    }).length;
+
+  /*
+   * HIGH RISK ALERTS
+   */
+
+  const highRiskAlerts =
+    riskRecords.filter((risk) => {
+      const status =
+        getRiskStatus(risk.id);
 
       return status !== "Resolved";
     }).length;
 
   /*
-   * HIGH RISK KPI
-   */
-
-  const highRiskAlerts =
-    riskRecords.filter((record) => {
-      const status =
-        riskStatuses[record.id] ||
-        "Open";
-
-      return (
-        record.level === "High" &&
-        status !== "Resolved"
-      );
-    }).length;
-
-  /*
    * RECENT ACTIVITY
+   *
+   * Only active items are displayed.
    */
 
-  const visibleActivities =
-    activities.filter((activity) => {
-      if (activity.type === "exception") {
+  const recentActivities = [
+    ...exceptions
+      .filter((exception) => {
         const status =
-          exceptionStatuses[activity.id] ||
-          "Open";
+          getExceptionStatus(
+            exception.id
+          );
 
         return status !== "Resolved";
-      }
+      })
+      .map((exception) => ({
+        id: exception.id,
+        title: exception.title,
+        detail: exception.detail,
+        href: `/exceptions/${exception.id}`,
+      })),
 
-      if (activity.type === "risk") {
+    ...riskRecords
+      .filter((risk) => {
         const status =
-          riskStatuses[activity.id] ||
-          "Open";
+          getRiskStatus(risk.id);
 
         return status !== "Resolved";
-      }
+      })
+      .map((risk) => ({
+        id: risk.id,
+        title: risk.title,
+        detail: risk.detail,
+        href: `/risk/${risk.id}`,
+      })),
 
-      if (activity.type === "compliance") {
+    ...complianceRecords
+      .filter((record) => {
         const status =
-          complianceStatuses[activity.id] ||
-          "Pending Review";
+          getComplianceStatus(
+            record.id
+          );
 
         return (
-          status !== "Approved" &&
-          status !== "Rejected"
+          status === "Pending Review"
         );
-      }
+      })
+      .map((record) => ({
+        id: record.id,
+        title: record.title,
+        detail: record.detail,
+        href: `/compliance/${record.id}`,
+      })),
 
-      if (activity.type === "reconciliation") {
+    ...reconciliationRecords
+      .filter((record) => {
         const status =
-          reconciliationStatuses[activity.id] ||
-          "Unmatched";
+          getReconciliationStatus(
+            record.id
+          );
 
         return status !== "Matched";
-      }
-
-      return true;
-    });
+      })
+      .map((record) => ({
+        id: record.id,
+        title: "Unmatched transaction",
+        detail: `${record.transaction} · Reconciliation`,
+        href: `/reconciliation/${record.id}`,
+      })),
+  ];
 
   return (
     <Layout>
@@ -231,21 +307,35 @@ export default function DashboardPage() {
 
         {/* PAGE HEADER */}
 
-        <div>
-          <h2 className="text-3xl font-bold">
-            Dashboard
-          </h2>
+        <div className="flex items-start justify-between">
 
-          <p className="mt-1 text-gray-500">
-            Payment operations overview and key operational alerts.
-          </p>
+          <div>
+            <h2 className="text-3xl font-bold">
+              Dashboard
+            </h2>
+
+            <p className="mt-1 text-gray-500">
+              Payment operations overview and key operational alerts.
+            </p>
+          </div>
+
+          {/* REFRESH DEMO */}
+
+          <button
+            type="button"
+            onClick={() =>
+              window.location.reload()
+            }
+            className="rounded-lg border bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-gray-50"
+          >
+            Refresh Demo
+          </button>
+
         </div>
 
         {/* KPI CARDS */}
 
         <div className="grid grid-cols-4 gap-4">
-
-          {/* TRANSACTIONS */}
 
           <Link
             href="/transactions"
@@ -264,8 +354,6 @@ export default function DashboardPage() {
             </p>
           </Link>
 
-          {/* SETTLEMENT SUCCESS */}
-
           <Link
             href="/reconciliation"
             className="rounded-xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-md"
@@ -283,8 +371,6 @@ export default function DashboardPage() {
             </p>
           </Link>
 
-          {/* OPEN EXCEPTIONS */}
-
           <Link
             href="/exceptions"
             className="rounded-xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-md"
@@ -301,8 +387,6 @@ export default function DashboardPage() {
               Exceptions requiring attention
             </p>
           </Link>
-
-          {/* HIGH RISK ALERTS */}
 
           <Link
             href="/risk"
@@ -345,23 +429,9 @@ export default function DashboardPage() {
 
             <div className="mt-5 space-y-4">
 
-              {visibleActivities.length === 0 ? (
-
-                <div className="rounded-lg border border-dashed p-6 text-center">
-
-                  <p className="font-medium text-gray-600">
-                    No active operational alerts
-                  </p>
-
-                  <p className="mt-1 text-sm text-gray-400">
-                    All recent operational issues have been resolved.
-                  </p>
-
-                </div>
-
-              ) : (
-
-                visibleActivities.map((activity) => (
+              {recentActivities
+                .slice(0, 4)
+                .map((activity) => (
                   <Link
                     key={activity.id}
                     href={activity.href}
@@ -375,8 +445,12 @@ export default function DashboardPage() {
                       {activity.detail}
                     </p>
                   </Link>
-                ))
+                ))}
 
+              {recentActivities.length === 0 && (
+                <p className="py-6 text-center text-sm text-gray-500">
+                  No active operational alerts.
+                </p>
               )}
 
             </div>
@@ -394,8 +468,12 @@ export default function DashboardPage() {
             <div className="mt-5 space-y-5">
 
               <div>
+
                 <div className="flex justify-between text-sm">
-                  <span>Payment Processing</span>
+                  <span>
+                    Payment Processing
+                  </span>
+
                   <span className="font-medium">
                     99.2%
                   </span>
@@ -404,24 +482,41 @@ export default function DashboardPage() {
                 <div className="mt-2 h-2 rounded-full bg-gray-200">
                   <div className="h-2 w-[99%] rounded-full bg-slate-900" />
                 </div>
+
               </div>
 
               <div>
+
                 <div className="flex justify-between text-sm">
-                  <span>Reconciliation</span>
+                  <span>
+                    Reconciliation
+                  </span>
+
                   <span className="font-medium">
-                    96.4%
+                    {settlementSuccess}%
                   </span>
                 </div>
 
                 <div className="mt-2 h-2 rounded-full bg-gray-200">
-                  <div className="h-2 w-[96%] rounded-full bg-slate-900" />
+
+                  <div
+                    className="h-2 rounded-full bg-slate-900"
+                    style={{
+                      width: `${settlementSuccess}%`,
+                    }}
+                  />
+
                 </div>
+
               </div>
 
               <div>
+
                 <div className="flex justify-between text-sm">
-                  <span>Compliance Controls</span>
+                  <span>
+                    Compliance Controls
+                  </span>
+
                   <span className="font-medium">
                     97.8%
                   </span>
@@ -430,11 +525,16 @@ export default function DashboardPage() {
                 <div className="mt-2 h-2 rounded-full bg-gray-200">
                   <div className="h-2 w-[98%] rounded-full bg-slate-900" />
                 </div>
+
               </div>
 
               <div>
+
                 <div className="flex justify-between text-sm">
-                  <span>Risk Monitoring</span>
+                  <span>
+                    Risk Monitoring
+                  </span>
+
                   <span className="font-medium">
                     94.6%
                   </span>
@@ -443,6 +543,7 @@ export default function DashboardPage() {
                 <div className="mt-2 h-2 rounded-full bg-gray-200">
                   <div className="h-2 w-[95%] rounded-full bg-slate-900" />
                 </div>
+
               </div>
 
             </div>

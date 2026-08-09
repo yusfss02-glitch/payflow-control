@@ -13,10 +13,12 @@ const transactions = {
     status: "Success",
     method: "Card",
     provider: "Stripe",
-    createdAt: "Aug 8, 2026 09:42",
+    transactionDate: "April 1, 2026",
+    createdAt: "April 1, 2026 09:42",
     settlement: "Settled",
     risk: "Low",
   },
+
   TXN002: {
     id: "TXN002",
     merchant: "Hotel B",
@@ -24,10 +26,12 @@ const transactions = {
     status: "Pending",
     method: "Bank Transfer",
     provider: "Midtrans",
-    createdAt: "Aug 8, 2026 10:15",
+    transactionDate: "April 2, 2026",
+    createdAt: "April 2, 2026 10:15",
     settlement: "Pending",
     risk: "Medium",
   },
+
   TXN003: {
     id: "TXN003",
     merchant: "Hotel C",
@@ -35,10 +39,12 @@ const transactions = {
     status: "Exception",
     method: "Card",
     provider: "Stripe",
-    createdAt: "Aug 8, 2026 10:28",
+    transactionDate: "April 3, 2026",
+    createdAt: "April 3, 2026 10:28",
     settlement: "Not Settled",
     risk: "High",
   },
+
   TXN004: {
     id: "TXN004",
     merchant: "Hotel D",
@@ -46,10 +52,12 @@ const transactions = {
     status: "Success",
     method: "QR Payment",
     provider: "Xendit",
-    createdAt: "Aug 8, 2026 11:02",
+    transactionDate: "April 4, 2026",
+    createdAt: "April 4, 2026 11:02",
     settlement: "Settled",
     risk: "Low",
   },
+
   TXN005: {
     id: "TXN005",
     merchant: "Hotel E",
@@ -57,10 +65,12 @@ const transactions = {
     status: "Success",
     method: "Card",
     provider: "Stripe",
-    createdAt: "Aug 8, 2026 11:35",
+    transactionDate: "April 5, 2026",
+    createdAt: "April 5, 2026 11:35",
     settlement: "Settled",
     risk: "Low",
   },
+
   TXN006: {
     id: "TXN006",
     merchant: "Hotel F",
@@ -68,7 +78,8 @@ const transactions = {
     status: "Exception",
     method: "Bank Transfer",
     provider: "Midtrans",
-    createdAt: "Aug 8, 2026 11:48",
+    transactionDate: "April 6, 2026",
+    createdAt: "April 6, 2026 11:48",
     settlement: "Not Settled",
     risk: "High",
   },
@@ -76,7 +87,7 @@ const transactions = {
 
 type TransactionId = keyof typeof transactions;
 
-export default function TransactionDetail({
+export default function TransactionDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -94,19 +105,19 @@ export default function TransactionDetail({
   if (!transaction) {
     return (
       <Layout>
-        <div className="rounded-xl bg-white p-8 shadow">
+        <div className="space-y-4">
 
           <h2 className="text-2xl font-bold">
             Transaction Not Found
           </h2>
 
-          <p className="mt-2 text-gray-500">
+          <p className="text-gray-500">
             The requested transaction does not exist.
           </p>
 
           <Link
             href="/transactions"
-            className="mt-6 inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
+            className="inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
           >
             Back to Transactions
           </Link>
@@ -139,6 +150,7 @@ export default function TransactionDetail({
           <div className="mt-3 flex items-center justify-between">
 
             <div>
+
               <h2 className="text-3xl font-bold">
                 {transaction.id}
               </h2>
@@ -146,6 +158,7 @@ export default function TransactionDetail({
               <p className="mt-1 text-gray-500">
                 Transaction detail and operational information.
               </p>
+
             </div>
 
             <span
@@ -164,56 +177,67 @@ export default function TransactionDetail({
 
         </div>
 
-        {/* ACTION */}
+        {/* STATUS WORKFLOW */}
 
         <div className="rounded-xl bg-white p-6 shadow">
 
           <h3 className="text-lg font-semibold">
-            Transaction Action
+            Transaction Status
           </h3>
 
           <p className="mt-1 text-sm text-gray-500">
             Update the operational status of this transaction.
           </p>
 
-          <div className="mt-5">
+          <div className="mt-5 flex gap-3">
 
-            {currentStatus === "Pending" && (
-              <button
-                onClick={() =>
-                  updateTransactionStatus(
-                    transaction.id,
-                    "Success"
-                  )
-                }
-                className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-700"
-              >
-                Approve Transaction
-              </button>
-            )}
+            <button
+              onClick={() =>
+                updateTransactionStatus(
+                  transaction.id,
+                  "Success"
+                )
+              }
+              className={`rounded-lg px-4 py-2 text-sm font-medium ${
+                currentStatus === "Success"
+                  ? "bg-green-600 text-white"
+                  : "border hover:bg-gray-50"
+              }`}
+            >
+              Success
+            </button>
 
-            {currentStatus === "Exception" && (
-              <button
-                onClick={() =>
-                  updateTransactionStatus(
-                    transaction.id,
-                    "Success"
-                  )
-                }
-                className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-700"
-              >
-                Resolve Transaction
-              </button>
-            )}
+            <button
+              onClick={() =>
+                updateTransactionStatus(
+                  transaction.id,
+                  "Pending"
+                )
+              }
+              className={`rounded-lg px-4 py-2 text-sm font-medium ${
+                currentStatus === "Pending"
+                  ? "bg-yellow-500 text-white"
+                  : "border hover:bg-gray-50"
+              }`}
+            >
+              Pending
+            </button>
 
-            {currentStatus === "Success" && (
-              <button
-                disabled
-                className="cursor-not-allowed rounded-lg bg-gray-200 px-5 py-2 text-sm font-medium text-gray-500"
-              >
-                Completed
-              </button>
-            )}
+            <button
+              onClick={() =>
+                updateTransactionStatus(
+                  transaction.id,
+                  "Exception"
+                )
+              }
+              className={`rounded-lg px-4 py-2 text-sm font-medium ${
+                currentStatus === "Exception"
+                  ? "bg-red-600 text-white"
+                  : "border hover:bg-gray-50"
+              }`}
+            >
+              Exception
+            </button>
 
           </div>
 
@@ -269,7 +293,7 @@ export default function TransactionDetail({
 
         </div>
 
-        {/* DETAILS */}
+        {/* TRANSACTION DETAILS */}
 
         <div className="rounded-xl bg-white p-6 shadow">
 
@@ -280,6 +304,7 @@ export default function TransactionDetail({
           <div className="mt-6 grid grid-cols-2 gap-6">
 
             <div>
+
               <p className="text-sm text-gray-500">
                 Transaction ID
               </p>
@@ -287,9 +312,23 @@ export default function TransactionDetail({
               <p className="mt-1 font-medium">
                 {transaction.id}
               </p>
+
             </div>
 
             <div>
+
+              <p className="text-sm text-gray-500">
+                Transaction Date
+              </p>
+
+              <p className="mt-1 font-medium">
+                {transaction.transactionDate}
+              </p>
+
+            </div>
+
+            <div>
+
               <p className="text-sm text-gray-500">
                 Merchant
               </p>
@@ -297,9 +336,11 @@ export default function TransactionDetail({
               <p className="mt-1 font-medium">
                 {transaction.merchant}
               </p>
+
             </div>
 
             <div>
+
               <p className="text-sm text-gray-500">
                 Payment Method
               </p>
@@ -307,9 +348,11 @@ export default function TransactionDetail({
               <p className="mt-1 font-medium">
                 {transaction.method}
               </p>
+
             </div>
 
             <div>
+
               <p className="text-sm text-gray-500">
                 Payment Provider
               </p>
@@ -317,9 +360,11 @@ export default function TransactionDetail({
               <p className="mt-1 font-medium">
                 {transaction.provider}
               </p>
+
             </div>
 
             <div>
+
               <p className="text-sm text-gray-500">
                 Created At
               </p>
@@ -327,9 +372,11 @@ export default function TransactionDetail({
               <p className="mt-1 font-medium">
                 {transaction.createdAt}
               </p>
+
             </div>
 
             <div>
+
               <p className="text-sm text-gray-500">
                 Current Status
               </p>
@@ -337,19 +384,24 @@ export default function TransactionDetail({
               <p className="mt-1 font-medium">
                 {currentStatus}
               </p>
+
             </div>
 
           </div>
 
         </div>
 
-        {/* RELATED OPERATIONS */}
+        {/* OPERATIONAL ACTIONS */}
 
         <div className="rounded-xl bg-white p-6 shadow">
 
           <h3 className="text-lg font-semibold">
-            Related Operations
+            Operational Actions
           </h3>
+
+          <p className="mt-1 text-sm text-gray-500">
+            Continue investigation through related payment operations.
+          </p>
 
           <div className="mt-5 flex gap-3">
 
