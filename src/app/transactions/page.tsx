@@ -8,7 +8,7 @@ import { useWorkflow } from "@/components/WorkflowContext";
 const transactions = [
   {
     id: "TXN001",
-    merchant: "Hotel A",
+    merchant: "StayBook",
     amount: "$1,250",
     status: "Success",
     method: "Card",
@@ -16,7 +16,7 @@ const transactions = [
   },
   {
     id: "TXN002",
-    merchant: "Hotel B",
+    merchant: "TripNest",
     amount: "$980",
     status: "Pending",
     method: "Bank Transfer",
@@ -24,7 +24,7 @@ const transactions = [
   },
   {
     id: "TXN003",
-    merchant: "Hotel C",
+    merchant: "RoomLink",
     amount: "$2,430",
     status: "Exception",
     method: "Card",
@@ -32,7 +32,7 @@ const transactions = [
   },
   {
     id: "TXN004",
-    merchant: "Hotel D",
+    merchant: "TravelHub",
     amount: "$750",
     status: "Success",
     method: "QR Payment",
@@ -40,7 +40,7 @@ const transactions = [
   },
   {
     id: "TXN005",
-    merchant: "Hotel E",
+    merchant: "BookStay",
     amount: "$1,890",
     status: "Success",
     method: "Card",
@@ -48,7 +48,7 @@ const transactions = [
   },
   {
     id: "TXN006",
-    merchant: "Hotel F",
+    merchant: "InnFinder",
     amount: "$560",
     status: "Exception",
     method: "Bank Transfer",
@@ -57,35 +57,30 @@ const transactions = [
 ];
 
 export default function TransactionsPage() {
-  const {
-    transactionStatuses,
-    updateTransactionStatus,
-  } = useWorkflow();
+  const { transactionStatuses } = useWorkflow();
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
 
-  const filteredTransactions = transactions.filter(
-    (transaction) => {
-      const currentStatus =
-        transactionStatuses[transaction.id] ||
-        transaction.status;
+  const filteredTransactions = transactions.filter((transaction) => {
+    const currentStatus =
+      transactionStatuses[transaction.id] ||
+      transaction.status;
 
-      const matchesSearch =
-        transaction.id
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        transaction.merchant
-          .toLowerCase()
-          .includes(search.toLowerCase());
+    const matchesSearch =
+      transaction.id
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      transaction.merchant
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
-      const matchesStatus =
-        status === "All" ||
-        currentStatus === status;
+    const matchesStatus =
+      status === "All" ||
+      currentStatus === status;
 
-      return matchesSearch && matchesStatus;
-    }
-  );
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <Layout>
@@ -99,7 +94,7 @@ export default function TransactionsPage() {
           </h2>
 
           <p className="mt-1 text-gray-500">
-            Monitor payment transactions across merchants.
+            Monitor payment transactions across booking platforms and channels.
           </p>
         </div>
 
@@ -109,7 +104,7 @@ export default function TransactionsPage() {
 
           <input
             type="text"
-            placeholder="Search transaction or merchant..."
+            placeholder="Search transaction or platform..."
             value={search}
             onChange={(e) =>
               setSearch(e.target.value)
@@ -139,10 +134,6 @@ export default function TransactionsPage() {
             <option value="Exception">
               Exception
             </option>
-
-            <option value="Resolved">
-              Resolved
-            </option>
           </select>
 
         </div>
@@ -165,7 +156,7 @@ export default function TransactionsPage() {
                 </th>
 
                 <th className="pb-3">
-                  Merchant
+                  Platform / Channel
                 </th>
 
                 <th className="pb-3">
@@ -178,10 +169,6 @@ export default function TransactionsPage() {
 
                 <th className="pb-3">
                   Status
-                </th>
-
-                <th className="pb-3 text-right">
-                  Action
                 </th>
 
               </tr>
@@ -239,35 +226,11 @@ export default function TransactionsPage() {
                               ? "bg-green-100 text-green-700"
                               : currentStatus === "Pending"
                               ? "bg-yellow-100 text-yellow-700"
-                              : currentStatus === "Resolved"
-                              ? "bg-green-100 text-green-700"
                               : "bg-red-100 text-red-700"
                           }`}
                         >
                           {currentStatus}
                         </span>
-
-                      </td>
-
-                      <td className="text-right">
-
-                        {currentStatus !== "Resolved" ? (
-                          <button
-                            onClick={() =>
-                              updateTransactionStatus(
-                                transaction.id,
-                                "Resolved"
-                              )
-                            }
-                            className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-700"
-                          >
-                            Resolved
-                          </button>
-                        ) : (
-                          <span className="text-xs font-medium text-gray-400">
-                            Resolved
-                          </span>
-                        )}
 
                       </td>
 
