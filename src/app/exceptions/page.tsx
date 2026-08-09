@@ -27,6 +27,13 @@ const exceptions = [
     type: "Reconciliation Difference",
     priority: "Medium",
   },
+  {
+    id: "EXC004",
+    transaction: "TXN005",
+    merchant: "Hotel E",
+    type: "Payment Processing Exception",
+    priority: "High",
+  },
 ];
 
 export default function ExceptionsPage() {
@@ -51,6 +58,8 @@ export default function ExceptionsPage() {
     <Layout>
       <div className="space-y-6">
 
+        {/* PAGE HEADER */}
+
         <div>
           <h2 className="text-3xl font-bold">
             Exceptions
@@ -61,7 +70,10 @@ export default function ExceptionsPage() {
           </p>
         </div>
 
+        {/* FILTER */}
+
         <div className="flex items-center justify-between">
+
           <h3 className="text-xl font-semibold">
             Exception Queue
           </h3>
@@ -71,12 +83,26 @@ export default function ExceptionsPage() {
             onChange={(e) => setStatus(e.target.value)}
             className="rounded-lg border bg-white px-4 py-2"
           >
-            <option value="All">All Status</option>
-            <option value="Open">Open</option>
-            <option value="Under Review">Under Review</option>
-            <option value="Resolved">Resolved</option>
+            <option value="All">
+              All Status
+            </option>
+
+            <option value="Open">
+              Open
+            </option>
+
+            <option value="Under Review">
+              Under Review
+            </option>
+
+            <option value="Resolved">
+              Resolved
+            </option>
           </select>
+
         </div>
+
+        {/* EXCEPTION TABLE */}
 
         <div className="rounded-xl bg-white p-6 shadow">
 
@@ -84,6 +110,7 @@ export default function ExceptionsPage() {
 
             <thead>
               <tr className="border-b">
+
                 <th className="pb-3">
                   Exception ID
                 </th>
@@ -111,6 +138,7 @@ export default function ExceptionsPage() {
                 <th className="pb-3 text-right">
                   Action
                 </th>
+
               </tr>
             </thead>
 
@@ -129,21 +157,25 @@ export default function ExceptionsPage() {
                   >
 
                     <td className="py-4 font-medium">
+
                       <Link
                         href={`/exceptions/${exception.id}`}
                         className="text-blue-600 underline hover:text-blue-800"
                       >
                         {exception.id}
                       </Link>
+
                     </td>
 
                     <td>
+
                       <Link
                         href={`/transactions/${exception.transaction}`}
                         className="text-blue-600 hover:underline"
                       >
                         {exception.transaction}
                       </Link>
+
                     </td>
 
                     <td>
@@ -155,6 +187,7 @@ export default function ExceptionsPage() {
                     </td>
 
                     <td>
+
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-semibold ${
                           exception.priority === "High"
@@ -164,9 +197,11 @@ export default function ExceptionsPage() {
                       >
                         {exception.priority}
                       </span>
+
                     </td>
 
                     <td>
+
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-semibold ${
                           currentStatus === "Open"
@@ -178,6 +213,7 @@ export default function ExceptionsPage() {
                       >
                         {currentStatus}
                       </span>
+
                     </td>
 
                     <td className="text-right">

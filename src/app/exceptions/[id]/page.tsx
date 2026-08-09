@@ -16,6 +16,7 @@ const exceptionData = {
       "Settlement amount does not match the expected transaction amount.",
     priority: "High",
   },
+
   EXC002: {
     id: "EXC002",
     transaction: "TXN006",
@@ -26,6 +27,7 @@ const exceptionData = {
       "Payment transaction requires manual operational review.",
     priority: "Medium",
   },
+
   EXC003: {
     id: "EXC003",
     transaction: "TXN002",
@@ -35,6 +37,17 @@ const exceptionData = {
     description:
       "Settlement record contains a difference from the transaction amount.",
     priority: "Medium",
+  },
+
+  EXC004: {
+    id: "EXC004",
+    transaction: "TXN005",
+    merchant: "Hotel E",
+    type: "Payment Processing Exception",
+    amount: "$1,890",
+    description:
+      "Payment processing requires operational review due to an exception detected during transaction processing.",
+    priority: "High",
   },
 };
 
@@ -46,7 +59,9 @@ export default function ExceptionDetail({
   const { id } = use(params);
 
   const exception =
-    exceptionData[id as keyof typeof exceptionData];
+    exceptionData[
+      id as keyof typeof exceptionData
+    ];
 
   const {
     exceptionStatuses,
@@ -56,7 +71,8 @@ export default function ExceptionDetail({
   if (!exception) {
     return (
       <Layout>
-        <div className="rounded-xl bg-white p-8 shadow">
+        <div className="space-y-4">
+
           <h2 className="text-2xl font-bold">
             Exception Not Found
           </h2>
@@ -71,6 +87,7 @@ export default function ExceptionDetail({
           >
             Back to Exceptions
           </Link>
+
         </div>
       </Layout>
     );
@@ -83,7 +100,10 @@ export default function ExceptionDetail({
     <Layout>
       <div className="space-y-6">
 
+        {/* HEADER */}
+
         <div>
+
           <Link
             href="/exceptions"
             className="text-sm text-gray-500 hover:text-slate-900"
@@ -92,7 +112,9 @@ export default function ExceptionDetail({
           </Link>
 
           <div className="mt-3 flex items-center justify-between">
+
             <div>
+
               <h2 className="text-3xl font-bold">
                 {exception.id}
               </h2>
@@ -100,6 +122,7 @@ export default function ExceptionDetail({
               <p className="mt-1 text-gray-500">
                 Exception investigation and resolution workflow.
               </p>
+
             </div>
 
             <span
@@ -113,10 +136,15 @@ export default function ExceptionDetail({
             >
               {status}
             </span>
+
           </div>
+
         </div>
 
+        {/* WORKFLOW */}
+
         <div className="rounded-xl bg-white p-6 shadow">
+
           <h3 className="text-lg font-semibold">
             Exception Workflow
           </h3>
@@ -190,11 +218,15 @@ export default function ExceptionDetail({
             </button>
 
           </div>
+
         </div>
+
+        {/* SUMMARY */}
 
         <div className="grid grid-cols-3 gap-4">
 
           <div className="rounded-xl bg-white p-5 shadow">
+
             <p className="text-sm text-gray-500">
               Exception Type
             </p>
@@ -202,9 +234,11 @@ export default function ExceptionDetail({
             <p className="mt-2 font-semibold">
               {exception.type}
             </p>
+
           </div>
 
           <div className="rounded-xl bg-white p-5 shadow">
+
             <p className="text-sm text-gray-500">
               Amount
             </p>
@@ -212,9 +246,11 @@ export default function ExceptionDetail({
             <p className="mt-2 text-2xl font-bold">
               {exception.amount}
             </p>
+
           </div>
 
           <div className="rounded-xl bg-white p-5 shadow">
+
             <p className="text-sm text-gray-500">
               Priority
             </p>
@@ -222,11 +258,15 @@ export default function ExceptionDetail({
             <p className="mt-2 font-semibold text-red-600">
               {exception.priority}
             </p>
+
           </div>
 
         </div>
 
+        {/* DETAILS */}
+
         <div className="rounded-xl bg-white p-6 shadow">
+
           <h3 className="text-lg font-semibold">
             Exception Details
           </h3>
@@ -234,6 +274,7 @@ export default function ExceptionDetail({
           <div className="mt-6 grid grid-cols-2 gap-6">
 
             <div>
+
               <p className="text-sm text-gray-500">
                 Exception ID
               </p>
@@ -241,9 +282,11 @@ export default function ExceptionDetail({
               <p className="mt-1 font-medium">
                 {exception.id}
               </p>
+
             </div>
 
             <div>
+
               <p className="text-sm text-gray-500">
                 Merchant
               </p>
@@ -251,9 +294,11 @@ export default function ExceptionDetail({
               <p className="mt-1 font-medium">
                 {exception.merchant}
               </p>
+
             </div>
 
             <div>
+
               <p className="text-sm text-gray-500">
                 Related Transaction
               </p>
@@ -264,9 +309,11 @@ export default function ExceptionDetail({
               >
                 {exception.transaction}
               </Link>
+
             </div>
 
             <div>
+
               <p className="text-sm text-gray-500">
                 Current Status
               </p>
@@ -274,11 +321,13 @@ export default function ExceptionDetail({
               <p className="mt-1 font-medium">
                 {status}
               </p>
+
             </div>
 
           </div>
 
           <div className="mt-6 border-t pt-6">
+
             <p className="text-sm text-gray-500">
               Description
             </p>
@@ -286,7 +335,9 @@ export default function ExceptionDetail({
             <p className="mt-2">
               {exception.description}
             </p>
+
           </div>
+
         </div>
 
       </div>
