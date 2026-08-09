@@ -42,6 +42,19 @@ const activities = [
   },
 ];
 
+const exceptionIds = [
+  "EXC001",
+  "EXC002",
+  "EXC003",
+  "EXC004",
+];
+
+const riskIds = [
+  "RISK001",
+  "RISK002",
+  "RISK003",
+];
+
 export default function DashboardPage() {
   const {
     exceptionStatuses,
@@ -69,7 +82,8 @@ export default function DashboardPage() {
 
     if (activity.type === "compliance") {
       const status =
-        complianceStatuses[activity.id] || "Pending Review";
+        complianceStatuses[activity.id] ||
+        "Pending Review";
 
       return (
         status !== "Approved" &&
@@ -79,7 +93,8 @@ export default function DashboardPage() {
 
     if (activity.type === "reconciliation") {
       const status =
-        reconciliationStatuses[activity.id] || "Unmatched";
+        reconciliationStatuses[activity.id] ||
+        "Unmatched";
 
       return status !== "Matched";
     }
@@ -89,6 +104,59 @@ export default function DashboardPage() {
 
   const visibleActivities =
     activities.filter(isActivityActive);
+
+  /*
+   * OPEN EXCEPTIONS
+   *
+   * All four exception records are counted.
+   * Resolved exceptions are removed from the KPI.
+   * Open and Under Review remain active.
+   */
+  const openExceptions =
+    exceptionIds.filter((id) => {
+      const status =
+        exceptionStatuses[id] || "Open";
+
+      return status !== "Resolved";
+    }).length;
+
+  /*
+   * HIGH RISK ALERTS
+   *
+   * All three risk records are counted.
+   * Resolved risks are removed from the KPI.
+   */
+  const highRiskAlerts =
+    riskIds.filter((id) => {
+      const status =
+        riskStatuses[id] || "Open";
+
+      return status !== "Resolved";
+    }).length;
+
+  /*
+   * SETTLEMENT SUCCESS
+   *
+   * There are currently five reconciliation records.
+   * Only records marked Matched are counted as successful.
+   */
+  const reconciliationTotal = 5;
+
+  const matchedReconciliations =
+    Object.values(
+      reconciliationStatuses
+    ).filter(
+      (status) => status === "Matched"
+    ).length;
+
+  const settlementSuccess =
+    reconciliationTotal === 0
+      ? 0
+      : (
+          (matchedReconciliations /
+            reconciliationTotal) *
+          100
+        ).toFixed(1);
 
   return (
     <Layout>
@@ -109,7 +177,9 @@ export default function DashboardPage() {
           </div>
 
           <button
-            onClick={() => window.location.reload()}
+            onClick={() =>
+              window.location.reload()
+            }
             className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
           >
             Refresh Demo
@@ -120,6 +190,8 @@ export default function DashboardPage() {
         {/* KPI CARDS */}
 
         <div className="grid grid-cols-4 gap-4">
+
+          {/* TRANSACTIONS */}
 
           <Link
             href="/transactions"
@@ -138,6 +210,8 @@ export default function DashboardPage() {
             </p>
           </Link>
 
+          {/* SETTLEMENT SUCCESS */}
+
           <Link
             href="/reconciliation"
             className="rounded-xl bg-white p-5 shadow transition hover:-translate-y-1 hover:shadow-md"
@@ -147,26 +221,15 @@ export default function DashboardPage() {
             </p>
 
             <h3 className="mt-2 text-3xl font-bold">
-              {(() => {
-                const total = 5;
-
-                const matched = Object.values(
-                  reconciliationStatuses
-                ).filter(
-                  (status) => status === "Matched"
-                ).length;
-
-                return `${(
-                  (matched / total) *
-                  100
-                ).toFixed(1)}%`;
-              })()}
+              {settlementSuccess}%
             </h3>
 
             <p className="mt-2 text-xs text-gray-400">
               Successfully reconciled
             </p>
           </Link>
+
+          {/* OPEN EXCEPTIONS */}
 
           <Link
             href="/exceptions"
@@ -177,31 +240,15 @@ export default function DashboardPage() {
             </p>
 
             <h3 className="mt-2 text-3xl font-bold">
-              {[
-                "EXC001",
-                "EXC002",
-                "EXC003",
-                "EXC004",
-              ].filter((id) => {
-                const status =
-                  exceptionStatuses[id];
-
-                if (status === "Resolved") {
-                  return false;
-                }
-
-                if (status === "Under Review") {
-                  return true;
-                }
-
-                return id !== "EXC003";
-              }).length}
+              {openExceptions}
             </h3>
 
             <p className="mt-2 text-xs text-gray-400">
               Exceptions requiring attention
             </p>
           </Link>
+
+          {/* HIGH RISK ALERTS */}
 
           <Link
             href="/risk"
@@ -212,18 +259,7 @@ export default function DashboardPage() {
             </p>
 
             <h3 className="mt-2 text-3xl font-bold">
-              {
-                [
-                  "RISK001",
-                  "RISK002",
-                  "RISK003",
-                ].filter((id) => {
-                  return (
-                    (riskStatuses[id] || "Open") !==
-                    "Resolved"
-                  );
-                }).length
-              }
+              {highRiskAlerts}
             </h3>
 
             <p className="mt-2 text-xs text-gray-400">
@@ -258,21 +294,23 @@ export default function DashboardPage() {
                   No active operational alerts.
                 </p>
               ) : (
-                visibleActivities.map((activity) => (
-                  <Link
-                    key={activity.id}
-                    href={activity.href}
-                    className="block rounded-lg border p-4 transition hover:bg-gray-50"
-                  >
-                    <p className="font-medium">
-                      {activity.title}
-                    </p>
+                visibleActivities.map(
+                  (activity) => (
+                    <Link
+                      key={activity.id}
+                      href={activity.href}
+                      className="block rounded-lg border p-4 transition hover:bg-gray-50"
+                    >
+                      <p className="font-medium">
+                        {activity.title}
+                      </p>
 
-                    <p className="mt-1 text-sm text-gray-500">
-                      {activity.detail}
-                    </p>
-                  </Link>
-                ))
+                      <p className="mt-1 text-sm text-gray-500">
+                        {activity.detail}
+                      </p>
+                    </Link>
+                  )
+                )
               )}
 
             </div>
@@ -291,7 +329,10 @@ export default function DashboardPage() {
 
               <div>
                 <div className="flex justify-between text-sm">
-                  <span>Payment Processing</span>
+                  <span>
+                    Payment Processing
+                  </span>
+
                   <span className="font-medium">
                     99.2%
                   </span>
@@ -304,7 +345,10 @@ export default function DashboardPage() {
 
               <div>
                 <div className="flex justify-between text-sm">
-                  <span>Reconciliation</span>
+                  <span>
+                    Reconciliation
+                  </span>
+
                   <span className="font-medium">
                     96.4%
                   </span>
@@ -317,7 +361,10 @@ export default function DashboardPage() {
 
               <div>
                 <div className="flex justify-between text-sm">
-                  <span>Compliance Controls</span>
+                  <span>
+                    Compliance Controls
+                  </span>
+
                   <span className="font-medium">
                     97.8%
                   </span>
@@ -330,7 +377,10 @@ export default function DashboardPage() {
 
               <div>
                 <div className="flex justify-between text-sm">
-                  <span>Risk Monitoring</span>
+                  <span>
+                    Risk Monitoring
+                  </span>
+
                   <span className="font-medium">
                     94.6%
                   </span>
