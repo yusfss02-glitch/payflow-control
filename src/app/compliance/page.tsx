@@ -8,28 +8,28 @@ import { useWorkflow } from "@/components/WorkflowContext";
 const complianceRecords = [
   {
     id: "CMP001",
-    merchant: "Hotel A",
+    merchant: "StayBook",
     requirement: "KYC Verification",
     status: "Pending Review",
     risk: "Medium",
   },
   {
     id: "CMP002",
-    merchant: "Hotel B",
+    merchant: "TripNest",
     requirement: "Business Verification",
     status: "Approved",
     risk: "Low",
   },
   {
     id: "CMP003",
-    merchant: "Hotel C",
+    merchant: "RoomLink",
     requirement: "Transaction Monitoring",
     status: "Pending Review",
     risk: "High",
   },
   {
     id: "CMP004",
-    merchant: "Hotel D",
+    merchant: "TravelHub",
     requirement: "KYC Verification",
     status: "Rejected",
     risk: "High",
@@ -59,19 +59,20 @@ export default function CompliancePage() {
 
   return (
     <Layout>
-
       <div className="space-y-6">
 
+        {/* PAGE HEADER */}
         <div>
           <h2 className="text-3xl font-bold">
             Compliance
           </h2>
 
           <p className="mt-1 text-gray-500">
-            Monitor compliance reviews and merchant verification status.
+            Monitor compliance reviews and platform verification status.
           </p>
         </div>
 
+        {/* KPI CARDS */}
         <div className="grid grid-cols-3 gap-4">
 
           <div className="rounded-xl bg-white p-5 shadow">
@@ -133,6 +134,7 @@ export default function CompliancePage() {
 
         </div>
 
+        {/* QUEUE HEADER */}
         <div className="flex items-center justify-between">
 
           <h3 className="text-xl font-semibold">
@@ -165,6 +167,7 @@ export default function CompliancePage() {
 
         </div>
 
+        {/* COMPLIANCE TABLE */}
         <div className="rounded-xl bg-white p-6 shadow">
 
           <table className="w-full text-left">
@@ -177,7 +180,7 @@ export default function CompliancePage() {
                 </th>
 
                 <th className="pb-3">
-                  Merchant
+                  Platform / Channel
                 </th>
 
                 <th className="pb-3">
@@ -254,11 +257,9 @@ export default function CompliancePage() {
 
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                            currentStatus ===
-                            "Approved"
+                            currentStatus === "Approved"
                               ? "bg-green-100 text-green-700"
-                              : currentStatus ===
-                                "Rejected"
+                              : currentStatus === "Rejected"
                               ? "bg-red-100 text-red-700"
                               : "bg-yellow-100 text-yellow-700"
                           }`}
@@ -320,7 +321,6 @@ export default function CompliancePage() {
         </div>
 
       </div>
-
     </Layout>
   );
 }

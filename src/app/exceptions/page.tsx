@@ -9,30 +9,30 @@ const exceptions = [
   {
     id: "EXC001",
     transaction: "TXN003",
-    merchant: "Hotel C",
+    merchant: "RoomLink",
     type: "Settlement Failure",
     priority: "High",
   },
   {
     id: "EXC002",
     transaction: "TXN006",
-    merchant: "Hotel F",
+    merchant: "InnFinder",
     type: "Payment Exception",
     priority: "Medium",
   },
   {
     id: "EXC003",
     transaction: "TXN002",
-    merchant: "Hotel B",
+    merchant: "TripNest",
     type: "Reconciliation Difference",
     priority: "Medium",
   },
   {
     id: "EXC004",
     transaction: "TXN005",
-    merchant: "Hotel E",
-    type: "Payment Processing Exception",
-    priority: "High",
+    merchant: "BookStay",
+    type: "Payment Exception",
+    priority: "Medium",
   },
 ];
 
@@ -70,7 +70,7 @@ export default function ExceptionsPage() {
           </p>
         </div>
 
-        {/* FILTER */}
+        {/* EXCEPTION QUEUE HEADER */}
 
         <div className="flex items-center justify-between">
 
@@ -80,7 +80,9 @@ export default function ExceptionsPage() {
 
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) =>
+              setStatus(e.target.value)
+            }
             className="rounded-lg border bg-white px-4 py-2"
           >
             <option value="All">
@@ -120,7 +122,7 @@ export default function ExceptionsPage() {
                 </th>
 
                 <th className="pb-3">
-                  Merchant
+                  Platform / Channel
                 </th>
 
                 <th className="pb-3">

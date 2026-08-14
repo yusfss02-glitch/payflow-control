@@ -5,105 +5,95 @@ import Link from "next/link";
 import Layout from "@/components/Layout";
 import { useWorkflow } from "@/components/WorkflowContext";
 
-const complianceRecords = {
+const complianceData = {
   CMP001: {
     id: "CMP001",
-    merchant: "Hotel A",
+    merchant: "StayBook",
     requirement: "KYC Verification",
+    status: "Pending Review",
     risk: "Medium",
     description:
-      "Merchant identity and business information require verification.",
+      "Merchant verification documents are pending operational review.",
   },
-
   CMP002: {
     id: "CMP002",
-    merchant: "Hotel B",
+    merchant: "TripNest",
     requirement: "Business Verification",
+    status: "Approved",
     risk: "Low",
     description:
-      "Business registration and merchant information have been verified.",
+      "Business verification has been completed and approved.",
   },
-
   CMP003: {
     id: "CMP003",
-    merchant: "Hotel C",
+    merchant: "RoomLink",
     requirement: "Transaction Monitoring",
+    status: "Pending Review",
     risk: "High",
     description:
-      "Transaction activity requires additional compliance review.",
+      "Transaction monitoring controls require additional compliance review.",
   },
-
   CMP004: {
     id: "CMP004",
-    merchant: "Hotel D",
+    merchant: "TravelHub",
     requirement: "KYC Verification",
+    status: "Rejected",
     risk: "High",
     description:
-      "Additional merchant verification is required.",
+      "The submitted verification information requires remediation before approval.",
   },
 };
 
-type ComplianceId = keyof typeof complianceRecords;
+type ComplianceId = keyof typeof complianceData;
 
-export default function ComplianceDetail({
+export default function ComplianceDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
 
-  const record =
-    complianceRecords[id as ComplianceId];
+  const compliance =
+    complianceData[id as ComplianceId];
 
   const {
     complianceStatuses,
     updateComplianceStatus,
   } = useWorkflow();
 
-  if (!record) {
+  if (!compliance) {
     return (
       <Layout>
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold">
-              Compliance Record Not Found
-            </h2>
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">
+            Compliance Record Not Found
+          </h2>
 
-            <p className="mt-2 text-gray-500">
-              The requested compliance record does not exist.
-            </p>
+          <p className="text-gray-500">
+            The requested compliance record does not exist.
+          </p>
 
-            <Link
-              href="/compliance"
-              className="mt-6 inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
-            >
-              Back to Compliance
-            </Link>
-          </div>
+          <Link
+            href="/compliance"
+            className="inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+          >
+            Back to Compliance
+          </Link>
         </div>
       </Layout>
     );
   }
 
-  /*
-   * Default status:
-   * CMP002 is already Approved.
-   * All other records start as Pending Review.
-   *
-   * Once a status is changed through the workflow,
-   * WorkflowContext becomes the source of truth.
-   */
   const currentStatus =
-    complianceStatuses[record.id] ||
-    (record.id === "CMP002"
-      ? "Approved"
-      : "Pending Review");
+    complianceStatuses[compliance.id] ||
+    compliance.status;
 
   return (
     <Layout>
       <div className="space-y-6">
 
         {/* HEADER */}
+
         <div>
           <Link
             href="/compliance"
@@ -113,14 +103,13 @@ export default function ComplianceDetail({
           </Link>
 
           <div className="mt-3 flex items-center justify-between">
-
             <div>
               <h2 className="text-3xl font-bold">
-                {record.id}
+                {compliance.id}
               </h2>
 
               <p className="mt-1 text-gray-500">
-                Compliance review and decision workflow.
+                Compliance review and verification workflow.
               </p>
             </div>
 
@@ -135,92 +124,96 @@ export default function ComplianceDetail({
             >
               {currentStatus}
             </span>
-
           </div>
         </div>
 
-        {/* WORKFLOW */}
+        {/* REVIEW WORKFLOW */}
+
         <div className="rounded-xl bg-white p-6 shadow">
 
           <h3 className="text-lg font-semibold">
-            Compliance Decision
+            Compliance Review
           </h3>
 
           <p className="mt-1 text-sm text-gray-500">
-            Review the compliance record and update its decision.
+            Review the compliance record and determine the appropriate outcome.
           </p>
 
-          <div className="mt-6 flex gap-3">
+          <div className="mt-5 flex gap-3">
 
-            {currentStatus === "Pending Review" && (
-              <>
-                <button
-                  onClick={() =>
-                    updateComplianceStatus(
-                      record.id,
-                      "Approved"
-                    )
-                  }
-                  className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                >
-                  Approve
-                </button>
+            <button
+              onClick={() =>
+                updateComplianceStatus(
+                  compliance.id,
+                  "Pending Review"
+                )
+              }
+              className={`rounded-lg px-4 py-2 text-sm font-medium ${
+                currentStatus === "Pending Review"
+                  ? "bg-yellow-500 text-white"
+                  : "border hover:bg-gray-50"
+              }`}
+            >
+              Pending Review
+            </button>
 
-                <button
-                  onClick={() =>
-                    updateComplianceStatus(
-                      record.id,
-                      "Rejected"
-                    )
-                  }
-                  className="rounded-lg border border-red-300 px-5 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-                >
-                  Reject
-                </button>
-              </>
-            )}
+            <button
+              onClick={() =>
+                updateComplianceStatus(
+                  compliance.id,
+                  "Approved"
+                )
+              }
+              className={`rounded-lg px-4 py-2 text-sm font-medium ${
+                currentStatus === "Approved"
+                  ? "bg-green-600 text-white"
+                  : "border hover:bg-gray-50"
+              }`}
+            >
+              Approve
+            </button>
 
-            {currentStatus === "Approved" && (
-              <button
-                disabled
-                className="cursor-not-allowed rounded-lg bg-gray-200 px-5 py-2 text-sm font-medium text-gray-500"
-              >
-                Approved
-              </button>
-            )}
-
-            {currentStatus === "Rejected" && (
-              <button
-                disabled
-                className="cursor-not-allowed rounded-lg bg-gray-200 px-5 py-2 text-sm font-medium text-gray-500"
-              >
-                Rejected
-              </button>
-            )}
+            <button
+              onClick={() =>
+                updateComplianceStatus(
+                  compliance.id,
+                  "Rejected"
+                )
+              }
+              className={`rounded-lg px-4 py-2 text-sm font-medium ${
+                currentStatus === "Rejected"
+                  ? "bg-red-600 text-white"
+                  : "border hover:bg-gray-50"
+              }`}
+            >
+              Reject
+            </button>
 
           </div>
+
         </div>
 
         {/* SUMMARY */}
+
         <div className="grid grid-cols-3 gap-4">
-
-          <div className="rounded-xl bg-white p-5 shadow">
-            <p className="text-sm text-gray-500">
-              Merchant
-            </p>
-
-            <p className="mt-2 text-lg font-semibold">
-              {record.merchant}
-            </p>
-          </div>
 
           <div className="rounded-xl bg-white p-5 shadow">
             <p className="text-sm text-gray-500">
               Requirement
             </p>
 
-            <p className="mt-2 text-lg font-semibold">
-              {record.requirement}
+            <p className="mt-2 font-semibold">
+              {compliance.requirement}
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-white p-5 shadow">
+            <p className="text-sm text-gray-500">
+              Platform / Channel
+            </p>
+
+            <p className="mt-2 font-semibold">
+              {compliance.merchant}
             </p>
           </div>
 
@@ -230,21 +223,22 @@ export default function ComplianceDetail({
             </p>
 
             <p
-              className={`mt-2 text-lg font-semibold ${
-                record.risk === "High"
+              className={`mt-2 font-semibold ${
+                compliance.risk === "High"
                   ? "text-red-600"
-                  : record.risk === "Medium"
+                  : compliance.risk === "Medium"
                   ? "text-yellow-600"
                   : "text-green-600"
               }`}
             >
-              {record.risk}
+              {compliance.risk}
             </p>
           </div>
 
         </div>
 
-        {/* DETAILS */}
+        {/* COMPLIANCE DETAILS */}
+
         <div className="rounded-xl bg-white p-6 shadow">
 
           <h3 className="text-lg font-semibold">
@@ -259,17 +253,17 @@ export default function ComplianceDetail({
               </p>
 
               <p className="mt-1 font-medium">
-                {record.id}
+                {compliance.id}
               </p>
             </div>
 
             <div>
               <p className="text-sm text-gray-500">
-                Merchant
+                Platform / Channel
               </p>
 
               <p className="mt-1 font-medium">
-                {record.merchant}
+                {compliance.merchant}
               </p>
             </div>
 
@@ -279,7 +273,7 @@ export default function ComplianceDetail({
               </p>
 
               <p className="mt-1 font-medium">
-                {record.requirement}
+                {compliance.requirement}
               </p>
             </div>
 
@@ -298,11 +292,11 @@ export default function ComplianceDetail({
           <div className="mt-6 border-t pt-6">
 
             <p className="text-sm text-gray-500">
-              Assessment
+              Description
             </p>
 
             <p className="mt-2">
-              {record.description}
+              {compliance.description}
             </p>
 
           </div>

@@ -8,7 +8,7 @@ const activities = [
   {
     id: "EXC001",
     title: "Settlement mismatch detected",
-    detail: "TXN003 · Hotel C",
+    detail: "TXN003 · RoomLink ",
     href: "/exceptions/EXC001",
     type: "exception",
   },
@@ -29,14 +29,14 @@ const activities = [
   {
     id: "REC005",
     title: "Unmatched transaction",
-    detail: "TXN005 · Hotel E",
+    detail: "TXN005 · BookStay",
     href: "/reconciliation/REC005",
     type: "reconciliation",
   },
   {
     id: "EXC004",
     title: "Payment processing exception",
-    detail: "TXN005 · Hotel E",
+    detail: "TXN005 · BookStay",
     href: "/exceptions/EXC004",
     type: "exception",
   },

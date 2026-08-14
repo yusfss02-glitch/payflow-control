@@ -9,7 +9,7 @@ const exceptionData = {
   EXC001: {
     id: "EXC001",
     transaction: "TXN003",
-    merchant: "Hotel C",
+    merchant: "RoomLink",
     type: "Settlement Failure",
     amount: "$2,430",
     description:
@@ -20,7 +20,7 @@ const exceptionData = {
   EXC002: {
     id: "EXC002",
     transaction: "TXN006",
-    merchant: "Hotel F",
+    merchant: "InnFinder",
     type: "Payment Exception",
     amount: "$560",
     description:
@@ -31,7 +31,7 @@ const exceptionData = {
   EXC003: {
     id: "EXC003",
     transaction: "TXN002",
-    merchant: "Hotel B",
+    merchant: "TripNest",
     type: "Reconciliation Difference",
     amount: "$980",
     description:
@@ -42,12 +42,12 @@ const exceptionData = {
   EXC004: {
     id: "EXC004",
     transaction: "TXN005",
-    merchant: "Hotel E",
-    type: "Payment Processing Exception",
+    merchant: "BookStay",
+    type: "Payment Exception",
     amount: "$1,890",
     description:
-      "Payment processing requires operational review due to an exception detected during transaction processing.",
-    priority: "High",
+      "Payment transaction requires manual operational review.",
+    priority: "Medium",
   },
 };
 
@@ -59,9 +59,7 @@ export default function ExceptionDetail({
   const { id } = use(params);
 
   const exception =
-    exceptionData[
-      id as keyof typeof exceptionData
-    ];
+    exceptionData[id as keyof typeof exceptionData];
 
   const {
     exceptionStatuses,
@@ -73,7 +71,7 @@ export default function ExceptionDetail({
       <Layout>
         <div className="space-y-4">
 
-          <h2 className="text-2xl font-bold">
+          <h2 className="text-3xl font-bold">
             Exception Not Found
           </h2>
 
@@ -100,10 +98,9 @@ export default function ExceptionDetail({
     <Layout>
       <div className="space-y-6">
 
-        {/* HEADER */}
+        {/* BACK LINK */}
 
         <div>
-
           <Link
             href="/exceptions"
             className="text-sm text-gray-500 hover:text-slate-900"
@@ -114,7 +111,6 @@ export default function ExceptionDetail({
           <div className="mt-3 flex items-center justify-between">
 
             <div>
-
               <h2 className="text-3xl font-bold">
                 {exception.id}
               </h2>
@@ -122,7 +118,6 @@ export default function ExceptionDetail({
               <p className="mt-1 text-gray-500">
                 Exception investigation and resolution workflow.
               </p>
-
             </div>
 
             <span
@@ -138,10 +133,9 @@ export default function ExceptionDetail({
             </span>
 
           </div>
-
         </div>
 
-        {/* WORKFLOW */}
+        {/* EXCEPTION WORKFLOW */}
 
         <div className="rounded-xl bg-white p-6 shadow">
 
@@ -274,7 +268,6 @@ export default function ExceptionDetail({
           <div className="mt-6 grid grid-cols-2 gap-6">
 
             <div>
-
               <p className="text-sm text-gray-500">
                 Exception ID
               </p>
@@ -282,23 +275,19 @@ export default function ExceptionDetail({
               <p className="mt-1 font-medium">
                 {exception.id}
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-gray-500">
-                Merchant
+                Platform / Channel
               </p>
 
               <p className="mt-1 font-medium">
                 {exception.merchant}
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-gray-500">
                 Related Transaction
               </p>
@@ -309,11 +298,9 @@ export default function ExceptionDetail({
               >
                 {exception.transaction}
               </Link>
-
             </div>
 
             <div>
-
               <p className="text-sm text-gray-500">
                 Current Status
               </p>
@@ -321,7 +308,6 @@ export default function ExceptionDetail({
               <p className="mt-1 font-medium">
                 {status}
               </p>
-
             </div>
 
           </div>

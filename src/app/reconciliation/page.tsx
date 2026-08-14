@@ -9,31 +9,31 @@ const records = [
   {
     id: "REC001",
     transaction: "TXN001",
-    merchant: "Hotel A",
+    merchant: "StayBook",
     amount: "$1,250",
   },
   {
     id: "REC002",
     transaction: "TXN002",
-    merchant: "Hotel B",
+    merchant: "TripNest",
     amount: "$980",
   },
   {
     id: "REC003",
     transaction: "TXN003",
-    merchant: "Hotel C",
+    merchant: "RoomLink",
     amount: "$2,430",
   },
   {
     id: "REC004",
     transaction: "TXN004",
-    merchant: "Hotel D",
+    merchant: "TravelHub",
     amount: "$750",
   },
   {
     id: "REC005",
     transaction: "TXN005",
-    merchant: "Hotel E",
+    merchant: "BookStay",
     amount: "$1,890",
   },
 ];
@@ -61,6 +61,7 @@ export default function ReconciliationPage() {
     <Layout>
       <div className="space-y-6">
 
+        {/* PAGE HEADER */}
         <div>
           <h2 className="text-3xl font-bold">
             Reconciliation
@@ -71,6 +72,7 @@ export default function ReconciliationPage() {
           </p>
         </div>
 
+        {/* KPI CARDS */}
         <div className="grid grid-cols-3 gap-4">
 
           <div className="rounded-xl bg-white p-5 shadow">
@@ -82,8 +84,10 @@ export default function ReconciliationPage() {
               {
                 records.filter(
                   (record) =>
-                    (reconciliationStatuses[record.id] ||
-                      "Unmatched") === "Matched"
+                    (
+                      reconciliationStatuses[record.id] ||
+                      "Unmatched"
+                    ) === "Matched"
                 ).length
               }
             </p>
@@ -98,8 +102,10 @@ export default function ReconciliationPage() {
               {
                 records.filter(
                   (record) =>
-                    (reconciliationStatuses[record.id] ||
-                      "Unmatched") === "Unmatched"
+                    (
+                      reconciliationStatuses[record.id] ||
+                      "Unmatched"
+                    ) === "Unmatched"
                 ).length
               }
             </p>
@@ -114,8 +120,10 @@ export default function ReconciliationPage() {
               {
                 records.filter(
                   (record) =>
-                    (reconciliationStatuses[record.id] ||
-                      "Unmatched") === "Under Review"
+                    (
+                      reconciliationStatuses[record.id] ||
+                      "Unmatched"
+                    ) === "Under Review"
                 ).length
               }
             </p>
@@ -123,6 +131,7 @@ export default function ReconciliationPage() {
 
         </div>
 
+        {/* QUEUE HEADER */}
         <div className="flex items-center justify-between">
 
           <h3 className="text-xl font-semibold">
@@ -155,6 +164,7 @@ export default function ReconciliationPage() {
 
         </div>
 
+        {/* RECONCILIATION TABLE */}
         <div className="rounded-xl bg-white p-6 shadow">
 
           <table className="w-full text-left">
@@ -171,7 +181,7 @@ export default function ReconciliationPage() {
                 </th>
 
                 <th className="pb-3">
-                  Merchant
+                  Platform / Channel
                 </th>
 
                 <th className="pb-3">
@@ -232,6 +242,7 @@ export default function ReconciliationPage() {
                     </td>
 
                     <td>
+
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-semibold ${
                           currentStatus === "Matched"
@@ -243,6 +254,7 @@ export default function ReconciliationPage() {
                       >
                         {currentStatus}
                       </span>
+
                     </td>
 
                     <td className="text-right">

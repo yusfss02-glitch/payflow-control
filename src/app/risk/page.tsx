@@ -9,21 +9,21 @@ const risks = [
   {
     id: "RISK001",
     transaction: "TXN003",
-    merchant: "Hotel C",
+    merchant: "RoomLink",
     riskType: "High Value Transaction",
     score: 92,
   },
   {
     id: "RISK002",
     transaction: "TXN006",
-    merchant: "Hotel F",
+    merchant: "InnFinder",
     riskType: "Unusual Payment Pattern",
     score: 84,
   },
   {
     id: "RISK003",
     transaction: "TXN002",
-    merchant: "Hotel B",
+    merchant: "TripNest",
     riskType: "Velocity Alert",
     score: 67,
   },
@@ -51,6 +51,7 @@ export default function RiskPage() {
     <Layout>
       <div className="space-y-6">
 
+        {/* PAGE HEADER */}
         <div>
           <h2 className="text-3xl font-bold">
             Risk Monitoring
@@ -61,6 +62,7 @@ export default function RiskPage() {
           </p>
         </div>
 
+        {/* KPI CARDS */}
         <div className="grid grid-cols-3 gap-4">
 
           <div className="rounded-xl bg-white p-5 shadow">
@@ -72,8 +74,10 @@ export default function RiskPage() {
               {
                 risks.filter(
                   (risk) =>
-                    (riskStatuses[risk.id] || "Open") ===
-                    "Open"
+                    (
+                      riskStatuses[risk.id] ||
+                      "Open"
+                    ) === "Open"
                 ).length
               }
             </p>
@@ -88,8 +92,10 @@ export default function RiskPage() {
               {
                 risks.filter(
                   (risk) =>
-                    (riskStatuses[risk.id] || "Open") ===
-                    "Under Review"
+                    (
+                      riskStatuses[risk.id] ||
+                      "Open"
+                    ) === "Under Review"
                 ).length
               }
             </p>
@@ -104,8 +110,10 @@ export default function RiskPage() {
               {
                 risks.filter(
                   (risk) =>
-                    (riskStatuses[risk.id] || "Open") ===
-                    "Resolved"
+                    (
+                      riskStatuses[risk.id] ||
+                      "Open"
+                    ) === "Resolved"
                 ).length
               }
             </p>
@@ -113,6 +121,7 @@ export default function RiskPage() {
 
         </div>
 
+        {/* QUEUE HEADER */}
         <div className="flex items-center justify-between">
 
           <h3 className="text-xl font-semibold">
@@ -145,6 +154,7 @@ export default function RiskPage() {
 
         </div>
 
+        {/* RISK TABLE */}
         <div className="rounded-xl bg-white p-6 shadow">
 
           <table className="w-full text-left">
@@ -161,7 +171,7 @@ export default function RiskPage() {
                 </th>
 
                 <th className="pb-3">
-                  Merchant
+                  Platform / Channel
                 </th>
 
                 <th className="pb-3">
@@ -188,7 +198,8 @@ export default function RiskPage() {
               {filteredRisks.map((risk) => {
 
                 const currentStatus =
-                  riskStatuses[risk.id] || "Open";
+                  riskStatuses[risk.id] ||
+                  "Open";
 
                 return (
                   <tr
@@ -197,12 +208,14 @@ export default function RiskPage() {
                   >
 
                     <td className="py-4 font-medium">
+
                       <Link
                         href={`/risk/${risk.id}`}
                         className="text-blue-600 underline hover:text-blue-800"
                       >
                         {risk.id}
                       </Link>
+
                     </td>
 
                     <td>
@@ -237,6 +250,7 @@ export default function RiskPage() {
                     </td>
 
                     <td>
+
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-semibold ${
                           currentStatus === "Open"
@@ -248,6 +262,7 @@ export default function RiskPage() {
                       >
                         {currentStatus}
                       </span>
+
                     </td>
 
                     <td className="text-right">

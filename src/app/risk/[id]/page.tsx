@@ -9,25 +9,27 @@ const riskData = {
   RISK001: {
     id: "RISK001",
     transaction: "TXN003",
-    merchant: "Hotel C",
+    merchant: "RoomLink",
     riskType: "High Value Transaction",
     score: 92,
     provider: "Stripe",
     amount: "$2,430",
   },
+
   RISK002: {
     id: "RISK002",
     transaction: "TXN006",
-    merchant: "Hotel F",
+    merchant: "InnFinder",
     riskType: "Unusual Payment Pattern",
     score: 84,
     provider: "Midtrans",
     amount: "$560",
   },
+
   RISK003: {
     id: "RISK003",
     transaction: "TXN002",
-    merchant: "Hotel B",
+    merchant: "TripNest",
     riskType: "Velocity Alert",
     score: 67,
     provider: "Midtrans",
@@ -42,7 +44,8 @@ export default function RiskDetailPage({
 }) {
   const { id } = use(params);
 
-  const risk = riskData[id as keyof typeof riskData];
+  const risk =
+    riskData[id as keyof typeof riskData];
 
   const {
     riskStatuses,
@@ -52,35 +55,32 @@ export default function RiskDetailPage({
   if (!risk) {
     return (
       <Layout>
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold">
-              Risk Alert Not Found
-            </h2>
+        <div>
+          <h2 className="text-2xl font-bold">
+            Risk Alert Not Found
+          </h2>
 
-            <p className="mt-2 text-gray-500">
-              The requested risk alert does not exist.
-            </p>
+          <p className="mt-2 text-gray-500">
+            The requested risk alert does not exist.
+          </p>
 
-            <Link
-              href="/risk"
-              className="mt-6 inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
-            >
-              Back to Risk Monitoring
-            </Link>
-          </div>
+          <Link
+            href="/risk"
+            className="mt-6 inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
+          >
+            Back to Risk Monitoring
+          </Link>
         </div>
       </Layout>
     );
   }
 
-  const status = riskStatuses[risk.id] || "Open";
+  const status =
+    riskStatuses[risk.id] || "Open";
 
   return (
     <Layout>
       <div className="space-y-6">
-
-        {/* HEADER */}
         <div>
           <Link
             href="/risk"
@@ -114,19 +114,20 @@ export default function RiskDetailPage({
           </div>
         </div>
 
-        {/* WORKFLOW */}
         <div className="rounded-xl bg-white p-6 shadow">
           <h3 className="text-lg font-semibold">
             Risk Workflow
           </h3>
 
           <div className="mt-6 grid grid-cols-3 gap-4">
-
             <button
               onClick={() =>
-                updateRiskStatus(risk.id, "Open")
+                updateRiskStatus(
+                  risk.id,
+                  "Open"
+                )
               }
-              className={`rounded-lg border p-4 text-left transition ${
+              className={`rounded-lg border p-4 text-left ${
                 status === "Open"
                   ? "border-red-400 bg-red-50"
                   : "hover:bg-gray-50"
@@ -148,7 +149,7 @@ export default function RiskDetailPage({
                   "Under Review"
                 )
               }
-              className={`rounded-lg border p-4 text-left transition ${
+              className={`rounded-lg border p-4 text-left ${
                 status === "Under Review"
                   ? "border-yellow-400 bg-yellow-50"
                   : "hover:bg-gray-50"
@@ -170,7 +171,7 @@ export default function RiskDetailPage({
                   "Resolved"
                 )
               }
-              className={`rounded-lg border p-4 text-left transition ${
+              className={`rounded-lg border p-4 text-left ${
                 status === "Resolved"
                   ? "border-green-400 bg-green-50"
                   : "hover:bg-gray-50"
@@ -184,13 +185,10 @@ export default function RiskDetailPage({
                 Risk alert has been resolved.
               </p>
             </button>
-
           </div>
         </div>
 
-        {/* RISK SUMMARY */}
         <div className="grid grid-cols-3 gap-4">
-
           <div className="rounded-xl bg-white p-5 shadow">
             <p className="text-sm text-gray-500">
               Risk Score
@@ -226,18 +224,14 @@ export default function RiskDetailPage({
               {risk.provider}
             </p>
           </div>
-
         </div>
 
-        {/* DETAILS */}
         <div className="rounded-xl bg-white p-6 shadow">
-
           <h3 className="text-lg font-semibold">
             Risk Details
           </h3>
 
           <div className="mt-6 grid grid-cols-2 gap-6">
-
             <div>
               <p className="text-sm text-gray-500">
                 Risk ID
@@ -260,7 +254,7 @@ export default function RiskDetailPage({
 
             <div>
               <p className="text-sm text-gray-500">
-                Merchant
+                Platform / Channel
               </p>
 
               <p className="mt-1 font-medium">
@@ -290,10 +284,8 @@ export default function RiskDetailPage({
                 {status}
               </p>
             </div>
-
           </div>
         </div>
-
       </div>
     </Layout>
   );
