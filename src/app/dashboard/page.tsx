@@ -140,7 +140,7 @@ export default function DashboardPage() {
    * There are currently five reconciliation records.
    * Only records marked Matched are counted as successful.
    */
-  const reconciliationTotal = 5;
+  const reconciliationTotal: number = 5;
 
   const matchedReconciliations =
     Object.values(
