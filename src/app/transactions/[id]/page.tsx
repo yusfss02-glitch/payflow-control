@@ -70,6 +70,7 @@ export default function TransactionDetail({
 
   const {
     transactionStatuses,
+    updateTransactionStatus,
   } = useWorkflow();
 
   if (!transaction) {
@@ -263,6 +264,42 @@ export default function TransactionDetail({
           </div>
 
         </div>
+
+        {/* EXTERNAL STATUS SIMULATION */}
+
+        {(status === "Pending" || status === "Exception") && (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-5">
+
+            <div className="flex items-center justify-between gap-4">
+
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">
+                  External Status Simulation
+                </h3>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  Demo only — simulates a payment confirmation
+                  received from the merchant or payment system.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  updateTransactionStatus(
+                    transaction.id,
+                    "Success"
+                  )
+                }
+                className="shrink-0 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+              >
+                Simulate Payment Confirmation
+              </button>
+
+            </div>
+
+          </div>
+        )}
 
       </div>
     </Layout>
