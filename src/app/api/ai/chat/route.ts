@@ -1,3 +1,4 @@
+// route.ts
 import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
 import fs from "fs/promises";
@@ -12,6 +13,49 @@ const DOCUMENT_FILES = [
   "Project Management.pdf",
   "Technical & Delivery.pdf",
 ];
+
+// ===== SISTEM ANTREAN UNIVERSAL UNTUK NEXT.JS (LOCAL MEMORY) =====
+type QueueTask = () => Promise<any>;
+
+class RequestQueue {
+  private queue: { task: QueueTask; resolve: (val: any) => void; reject: (err: any) => void }[] = [];
+  private isProcessing = false;
+  private delayBetweenRequests = 4200; // Jeda aman 4.2 detik untuk menjaga batas 15 RPM
+
+  async add<T>(task: QueueTask): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ task, resolve, reject });
+      this.process();
+    });
+  }
+
+  private async process() {
+    if (this.isProcessing || this.queue.length === 0) return;
+    this.isProcessing = true;
+
+    const current = this.queue.shift();
+    if (current) {
+      try {
+        const result = await current.task();
+        current.resolve(result);
+      } catch (error) {
+        current.reject(error);
+      } finally {
+        // Memberikan jeda waktu sebelum memproses antrean pengguna berikutnya
+        setTimeout(() => {
+          this.isProcessing = false;
+          this.process();
+        }, this.delayBetweenRequests);
+      }
+    }
+  }
+}
+
+// Memastikan objek antrean bersifat global dan tidak terhapus saat file route.ts di-reload oleh Next.js
+const globalForQueue = global as unknown as { geminiQueue?: RequestQueue };
+const geminiQueue = globalForQueue.geminiQueue ?? new RequestQueue();
+if (process.env.NODE_ENV !== "production") globalForQueue.geminiQueue = geminiQueue;
+// =================================================================
 
 async function loadKnowledgeBase(): Promise<string> {
   const documents: string[] = [];
@@ -111,10 +155,15 @@ USER QUESTION:
 ${question}
 `;
 
-    const interaction = await ai.interactions.create({
-      model: "gemini-3-flash-preview",
-      input: prompt,
+    // ===== MEMPROSES PERTANYAAN LEWAT JALUR ANTREAN AMAN =====
+    const interaction = await geminiQueue.add(async () => {
+      console.log(`[Queue] Memproses pertanyaan untuk: "${question.substring(0, 30)}..."`);
+      return await ai.interactions.create({
+        model: "gemini-3.1-flash-lite",
+        input: prompt,
+      });
     });
+    // ========================================================
 
     let answer = "";
 
