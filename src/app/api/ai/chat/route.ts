@@ -156,7 +156,7 @@ ${question}
 `;
 
     // ===== MEMPROSES PERTANYAAN LEWAT JALUR ANTREAN AMAN =====
-    const interaction = await geminiQueue.add(async () => {
+    const interaction: any = await geminiQueue.add(async () => {
       console.log(`[Queue] Memproses pertanyaan untuk: "${question.substring(0, 30)}..."`);
       return await ai.interactions.create({
         model: "gemini-3.1-flash-lite",
